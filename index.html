@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Piazzamenti e Controllo Collisioni — Mikron Mill P 900</title>
+<style>
+/* ===================================================================
+   PIAZZAMENTI E CONTROLLO COLLISIONI — foglio di stile
+   Tema industriale da officina: slate scuro, superfici acciaio,
+   colori funzionali per attrezzature/pezzi/stati richiesti dal progetto.
+   =================================================================== */
+:root{
+  --bg-0:#0a0f1a; --bg-1:#0f172a; --bg-2:#161f32; --bg-3:#1e293b; --bg-4:#273449;
+  --bd:#2c3a52; --bd-strong:#3d4f6b;
+  --tx-hi:#e9eef7; --tx-mid:#aab6c9; --tx-dim:#71809a;
+  --steel:#64748b; --steel-fill:rgba(100,116,139,.30);
+  --plate:#2f7dfb; --plate-fill:rgba(47,125,251,.26);
+  --vise:#e8801f; --vise-fill:rgba(232,128,31,.26);
+  --piece:#9b6bf2; --piece-fill:rgba(155,107,242,.24);
+  --active:#27c46b; --active-fill:rgba(39,196,107,.24);
+  --danger:#ef4444; --danger-fill:rgba(239,68,68,.26);
+  --warn:#f5a524; --warn-fill:rgba(245,165,36,.24);
+  --missing:#38bdf8; --missing-fill:rgba(56,189,248,.16);
+  --accent:#38bdf8;
+  --font-display:"Bahnschrift","Segoe UI Semibold","Segoe UI",system-ui,"Arial Narrow",sans-serif;
+  --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"Cascadia Mono","Consolas","SFMono-Regular",Menlo,monospace;
+  --radius:3px;
+  --topbar-h:44px; --disclaimer-h:26px; --bottombar-h:56px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg-0); color:var(--tx-hi);
+  font-family:var(--font-body); font-size:14px; line-height:1.4;
+  overflow:hidden; -webkit-tap-highlight-color:transparent;
+}
+button, input, select, textarea{font-family:inherit; font-size:inherit; color:inherit;}
+button{cursor:pointer;}
+.mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+.hidden{display:none !important;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg-1);}
+::-webkit-scrollbar-thumb{background:var(--bd-strong);border-radius:5px;}
+
+/* ---------- layout generale ---------- */
+#app{display:flex;flex-direction:column;height:100%;}
+
+/* ---------- topbar ---------- */
+#topbar{
+  height:var(--topbar-h); flex:0 0 auto; display:flex; align-items:center; gap:4px;
+  background:linear-gradient(180deg,var(--bg-3),var(--bg-2)); border-bottom:1px solid var(--bd);
+  padding:0 8px; position:relative; z-index:40;
+}
+#brand{
+  font-family:var(--font-display); font-weight:700; letter-spacing:.03em; font-size:13px;
+  color:var(--tx-hi); white-space:nowrap; padding-right:10px; margin-right:6px; border-right:1px solid var(--bd);
+  display:flex; flex-direction:column; line-height:1.15;
+}
+#brand small{font-family:var(--font-mono); font-weight:400; color:var(--missing); font-size:10px; letter-spacing:.04em;}
+#menubar{display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;}
+#menubar::-webkit-scrollbar{display:none;}
+.menu-item{position:relative;}
+.menu-btn{
+  background:transparent; border:1px solid transparent; color:var(--tx-mid);
+  padding:8px 10px; border-radius:var(--radius); font-size:12.5px; font-weight:600;
+  letter-spacing:.02em; white-space:nowrap; text-transform:uppercase;
+}
+.menu-btn:hover, .menu-btn.aperto{background:var(--bg-4); color:var(--tx-hi); border-color:var(--bd-strong);}
+.menu-drop{
+  position:absolute; top:100%; left:0; margin-top:4px; min-width:220px;
+  background:var(--bg-3); border:1px solid var(--bd-strong); border-radius:var(--radius);
+  box-shadow:0 12px 28px rgba(0,0,0,.45); padding:4px; z-index:50;
+}
+.menu-drop button{
+  display:flex; width:100%; text-align:left; background:none; border:none; color:var(--tx-mid);
+  padding:8px 10px; border-radius:2px; font-size:13px; gap:8px; align-items:center;
+}
+.menu-drop button:hover{background:var(--bg-4); color:var(--tx-hi);}
+.menu-drop hr{border:none; border-top:1px solid var(--bd); margin:4px 2px;}
+#menu-toggle-mobile{display:none;}
+
+/* ---------- disclaimer ---------- */
+#disclaimer-bar{
+  flex:0 0 auto; height:var(--disclaimer-h); display:flex; align-items:center;
+  background:repeating-linear-gradient(135deg,var(--bg-1) 0 10px, var(--bg-2) 10px 20px);
+  border-bottom:1px solid var(--bd); padding:0 10px; font-size:10.5px; color:var(--tx-dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#disclaimer-bar b{color:var(--warn); font-weight:700; margin-right:6px;}
+
+/* ---------- layout centrale ---------- */
+#layout{flex:1 1 auto; display:flex; min-height:0;}
+#tree-panel, #props-panel{
+  flex:0 0 240px; background:var(--bg-1); border-right:1px solid var(--bd);
+  overflow-y:auto; padding:8px;
+}
+#props-panel{border-right:none; border-left:1px solid var(--bd);}
+#canvas-wrap{flex:1 1 auto; display:flex; flex-direction:column; min-width:0; background:var(--bg-0);}
+
+.pannello-titolo{
+  font-family:var(--font-display); font-size:11px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--tx-dim); margin:10px 2px 6px; display:flex; justify-content:space-between; align-items:center;
+}
+.pannello-titolo:first-child{margin-top:2px;}
+
+.albero-nodo{
+  display:flex; align-items:center; gap:6px; padding:6px 8px; border-radius:var(--radius);
+  font-size:12.5px; color:var(--tx-mid); cursor:pointer; border:1px solid transparent;
+}
+.albero-nodo:hover{background:var(--bg-3);}
+.albero-nodo.selezionato{background:var(--bg-4); border-color:var(--accent); color:var(--tx-hi);}
+.albero-nodo .pallino{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--steel);}
+.albero-vuoto{font-size:12px; color:var(--tx-dim); padding:4px 8px; font-style:italic;}
+.albero-aggiungi{
+  width:100%; margin-top:4px; padding:6px; border:1px dashed var(--bd-strong); background:none;
+  color:var(--accent); border-radius:var(--radius); font-size:12px; font-weight:600;
+}
+.albero-aggiungi:hover{background:var(--bg-3);}
+
+/* ---------- tabs vista ---------- */
+#view-tabs{
+  flex:0 0 auto; display:flex; align-items:center; gap:2px; padding:6px 8px;
+  border-bottom:1px solid var(--bd); background:var(--bg-1);
+}
+.tab-btn{
+  background:none; border:1px solid var(--bd); color:var(--tx-dim); padding:6px 12px;
+  border-radius:var(--radius); font-size:12px; font-weight:600;
+}
+.tab-btn.attiva{background:var(--bg-4); color:var(--tx-hi); border-color:var(--accent);}
+.tab-btn:disabled{opacity:.35; cursor:not-allowed;}
+.tab-nota-disab{font-size:10.5px; color:var(--tx-dim); margin-left:4px;}
+
+#svg-host{flex:1 1 auto; position:relative; overflow:hidden; touch-action:none; background:
+  radial-gradient(ellipse at 50% 0%, #0d1526 0%, var(--bg-0) 70%);}
+#stage{width:100%; height:100%; display:block;}
+#foto-host{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+#foto-host img{max-width:100%; max-height:100%; object-fit:contain;}
+#foto-label{
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+  background:rgba(245,165,36,.92); color:#1a1206; font-weight:800; font-size:11px;
+  letter-spacing:.05em; padding:4px 10px; border-radius:2px; text-transform:uppercase;
+}
+#vista-placeholder{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:8px; color:var(--tx-dim); text-align:center; padding:20px;
+}
+#vista-placeholder b{color:var(--missing); font-family:var(--font-display); letter-spacing:.04em;}
+
+#canvas-toolbar{
+  flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:6px 8px;
+  border-top:1px solid var(--bd); background:var(--bg-1); flex-wrap:wrap;
+}
+.tool-btn{
+  background:var(--bg-3); border:1px solid var(--bd-strong); color:var(--tx-mid);
+  width:30px; height:30px; border-radius:var(--radius); font-size:14px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+}
+.tool-btn:hover{background:var(--bg-4); color:var(--tx-hi);}
+.tool-sep{width:1px; height:20px; background:var(--bd); margin:0 2px;}
+.tool-check{display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--tx-mid); padding:0 4px;}
+.spacer{flex:1 1 auto;}
+#zoom-val{font-size:11px; color:var(--tx-dim); min-width:38px; text-align:center;}
+
+/* ---------- footer ---------- */
+#bottombar{
+  flex:0 0 auto; height:var(--bottombar-h); display:flex; align-items:center; gap:10px;
+  padding:0 10px; background:var(--bg-2); border-top:1px solid var(--bd);
+}
+.badge-stato{
+  display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:var(--radius);
+  font-size:11px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+  border:1px solid var(--bd-strong); background:var(--bg-3); color:var(--tx-mid); white-space:nowrap;
+}
+.badge-stato .icona{font-size:13px; line-height:1;}
+.badge-stato.st-non-configurato, .badge-stato.st-dati-incompleti, .badge-stato.st-verifica-non-eseguibile{
+  color:var(--missing); border-color:var(--missing); background:var(--missing-fill);
+}
+.badge-stato.st-collisione{color:var(--danger); border-color:var(--danger); background:var(--danger-fill);}
+.badge-stato.st-margine-insufficiente, .badge-stato.st-avviso{color:var(--warn); border-color:var(--warn); background:var(--warn-fill);}
+.badge-stato.st-ok{color:var(--active); border-color:var(--active); background:var(--active-fill);}
+.btn-grande{
+  flex:1 1 0; max-width:280px; height:38px; border-radius:var(--radius); font-family:var(--font-display);
+  font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:12.5px; border:1px solid var(--bd-strong);
+}
+#btn-wizard{background:var(--bg-4); color:var(--tx-hi);}
+#btn-wizard:hover{border-color:var(--accent);}
+#btn-verify{background:var(--accent); color:#04202f; border-color:var(--accent);}
+#btn-verify:disabled{background:var(--bg-3); color:var(--tx-dim); border-color:var(--bd); cursor:not-allowed;}
+#btn-verify:not(:disabled):hover{filter:brightness(1.08);}
+
+/* ---------- pannello proprietà / form ---------- */
+.campo{margin-bottom:9px;}
+.campo label{display:block; font-size:11px; color:var(--tx-dim); margin-bottom:3px; text-transform:uppercase; letter-spacing:.03em;}
+.campo input[type=text], .campo input[type=color], .campo select, .campo textarea{
+  width:100%; background:var(--bg-3); border:1px solid var(--bd-strong); color:var(--tx-hi);
+  padding:7px 8px; border-radius:var(--radius); font-size:13px;
+}
+.campo input.mono{font-family:var(--font-mono);}
+.campo input:focus, .campo select:focus, .campo textarea:focus{outline:2px solid var(--accent); outline-offset:0;}
+.campo textarea{resize:vertical; min-height:44px;}
+.campo-check{display:flex; align-items:center; gap:7px; margin-bottom:9px; font-size:13px; color:var(--tx-mid);}
+.campo-check input{width:16px; height:16px;}
+.riga2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.riga3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+fieldset.gruppo{border:1px solid var(--bd); border-radius:var(--radius); margin:0 0 12px; padding:10px;}
+fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); padding:0 6px;}
+.nota-campo{font-size:10.5px; color:var(--tx-dim); margin-top:2px;}
+.pillola-null{display:inline-block; font-size:10px; color:var(--missing); background:var(--missing-fill); padding:1px 6px; border-radius:8px; margin-left:6px; font-weight:700;}
+
+.btn{
+  background:var(--bg-4); border:1px solid var(--bd-strong); color:var(--tx-hi);
+  padding:8px 12px; border-radius:var(--radius); font-size:12.5px; font-weight:600;
+}
+.btn:hover{border-color:var(--accent);}
+.btn.primario{background:var(--accent); color:#04202f; border-color:var(--accent);}
+.btn.pericolo{background:var(--danger-fill); color:var(--danger); border-color:var(--danger);}
+.btn.piccolo{padding:5px 8px; font-size:11px;}
+.riga-btn{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+
+/* ---------- liste (elenchi generici) ---------- */
+.elenco-riga{
+  display:flex; align-items:center; gap:8px; padding:8px; border:1px solid var(--bd); border-radius:var(--radius);
+  margin-bottom:6px; background:var(--bg-2); cursor:pointer;
+}
+.elenco-riga:hover{border-color:var(--bd-strong);}
+.elenco-riga.selezionata{border-color:var(--accent); background:var(--bg-3);}
+.elenco-riga .tag-colore{width:10px; height:10px; border-radius:2px; flex:0 0 auto;}
+.elenco-riga .elenco-testo{flex:1 1 auto; min-width:0;}
+.elenco-riga .elenco-titolo{font-size:12.5px; font-weight:600; color:var(--tx-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.elenco-riga .elenco-sub{font-size:10.5px; color:var(--tx-dim); font-family:var(--font-mono);}
+.elenco-riga button{background:none; border:none; color:var(--tx-dim); font-size:15px; padding:2px 6px;}
+.elenco-riga button:hover{color:var(--danger);}
+
+/* ---------- modali ---------- */
+#modal-overlay{
+  position:fixed; inset:0; background:rgba(4,8,16,.72); backdrop-filter:blur(2px);
+  display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;
+}
+#modal-box{
+  background:var(--bg-2); border:1px solid var(--bd-strong); border-radius:6px;
+  width:100%; max-width:640px; max-height:88vh; display:flex; flex-direction:column;
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+}
+#modal-box.largo{max-width:920px;}
+#modal-head{
+  display:flex; align-items:center; justify-content:space-between; padding:12px 16px;
+  border-bottom:1px solid var(--bd); flex:0 0 auto;
+}
+#modal-head h2{font-family:var(--font-display); font-size:14px; letter-spacing:.03em; margin:0; text-transform:uppercase; color:var(--tx-hi);}
+#modal-close{background:none; border:none; color:var(--tx-dim); font-size:20px; line-height:1; padding:2px 6px;}
+#modal-close:hover{color:var(--tx-hi);}
+#modal-body{padding:14px 16px; overflow-y:auto; flex:1 1 auto;}
+#modal-foot{padding:10px 16px; border-top:1px solid var(--bd); display:flex; justify-content:flex-end; gap:8px; flex:0 0 auto;}
+
+/* ---------- report / anomalie ---------- */
+.anomalia-card{
+  border:1px solid var(--bd); border-left:4px solid var(--steel); border-radius:var(--radius);
+  padding:9px 11px; margin-bottom:8px; background:var(--bg-3);
+}
+.anomalia-card.sev-collisione{border-left-color:var(--danger); background:linear-gradient(90deg, var(--danger-fill), var(--bg-3) 22%);}
+.anomalia-card.sev-margine, .anomalia-card.sev-avviso{border-left-color:var(--warn); background:linear-gradient(90deg, var(--warn-fill), var(--bg-3) 22%);}
+.anomalia-card.sev-info{border-left-color:var(--missing); background:linear-gradient(90deg, var(--missing-fill), var(--bg-3) 22%);}
+.anomalia-head{display:flex; justify-content:space-between; gap:8px; align-items:baseline; margin-bottom:4px;}
+.anomalia-tipo{font-weight:700; font-size:12.5px; color:var(--tx-hi);}
+.anomalia-badge{font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:2px 6px; border-radius:8px;}
+.anomalia-card.sev-collisione .anomalia-badge{color:var(--danger); background:var(--danger-fill);}
+.anomalia-card.sev-margine .anomalia-badge, .anomalia-card.sev-avviso .anomalia-badge{color:var(--warn); background:var(--warn-fill);}
+.anomalia-card.sev-info .anomalia-badge{color:var(--missing); background:var(--missing-fill);}
+.anomalia-corpo{font-size:12px; color:var(--tx-mid);}
+.anomalia-griglia{display:grid; grid-template-columns:1fr 1fr; gap:2px 14px; margin-top:6px; font-size:11.5px;}
+.anomalia-griglia .k{color:var(--tx-dim);}
+.anomalia-griglia .v{font-family:var(--font-mono); color:var(--tx-hi);}
+.riepilogo-conteggi{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;}
+.conteggio-pill{padding:6px 10px; border-radius:14px; font-size:11px; font-weight:700; border:1px solid var(--bd-strong);}
+
+/* ---------- wizard ---------- */
+.wizard-step-ind{display:flex; gap:4px; margin-bottom:14px; flex-wrap:wrap;}
+.wizard-step-ind span{width:22px; height:4px; border-radius:2px; background:var(--bd-strong);}
+.wizard-step-ind span.fatto{background:var(--active);}
+.wizard-step-ind span.corrente{background:var(--accent);}
+.wizard-titolo{font-family:var(--font-display); font-size:15px; letter-spacing:.02em; margin:0 0 4px; color:var(--tx-hi);}
+.wizard-sotto{font-size:12px; color:var(--tx-dim); margin-bottom:14px;}
+
+/* ---------- diagnostica ---------- */
+.diag-riga{display:flex; align-items:center; gap:10px; padding:9px; border:1px solid var(--bd); border-radius:var(--radius); margin-bottom:6px;}
+.diag-esito{font-weight:800; font-size:11px; padding:3px 8px; border-radius:3px; letter-spacing:.04em;}
+.diag-esito.pass{color:var(--active); background:var(--active-fill);}
+.diag-esito.fail{color:var(--danger); background:var(--danger-fill);}
+.diag-testo{font-size:12.5px; color:var(--tx-mid); flex:1;}
+.diag-testo b{color:var(--tx-hi);}
+
+/* ---------- toast ---------- */
+#toast-host{position:fixed; bottom:70px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:6px; align-items:center;}
+.toast{background:var(--bg-4); border:1px solid var(--bd-strong); color:var(--tx-hi); padding:8px 14px; border-radius:4px; font-size:12.5px; box-shadow:0 8px 20px rgba(0,0,0,.4); max-width:86vw;}
+.toast.err{border-color:var(--danger); color:var(--danger);}
+.toast.ok{border-color:var(--active); color:var(--active);}
+
+/* ---------- responsive ---------- */
+#drawer-scrim{display:none;}
+@media (max-width:980px){
+  #brand span.sotto{display:none;}
+  #menubar{gap:0;}
+  .menu-btn{padding:8px 7px; font-size:11.5px;}
+}
+@media (max-width:860px){
+  #tree-panel, #props-panel{
+    position:fixed; top:calc(var(--topbar-h) + var(--disclaimer-h)); bottom:var(--bottombar-h);
+    width:82vw; max-width:320px; z-index:60; box-shadow:0 0 30px rgba(0,0,0,.5);
+    transform:translateX(-105%); transition:transform .18s ease;
+  }
+  #props-panel{left:auto; right:0; transform:translateX(105%);}
+  #tree-panel.aperto{transform:translateX(0);}
+  #props-panel.aperto{transform:translateX(0);}
+  #drawer-scrim.attivo{display:block; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:55;}
+  #menu-toggle-mobile{
+    display:flex; align-items:center; justify-content:center; width:32px; height:32px;
+    background:var(--bg-4); border:1px solid var(--bd-strong); border-radius:var(--radius); color:var(--tx-hi); font-size:15px; margin-right:4px;
+  }
+  .btn-grande{font-size:11px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <button id="menu-toggle-mobile" title="Apri albero oggetti" aria-label="Apri albero oggetti">☰</button>
+    <div id="brand">PIAZZAMENTI &amp; CONTROLLO COLLISIONI<small class="sotto">MIKRON MILL P 900 · v<span id="app-version-tag"></span></small></div>
+    <nav id="menubar"></nav>
+  </header>
+
+  <div id="disclaimer-bar">
+    <b>ATTENZIONE</b>Strumento di pre-verifica geometrica — non è un simulatore CNC certificato. Non sostituisce simulazione CAM, simulazione del controllo, Single Block, Dry Run, prova con avanzamento ridotto e le procedure di sicurezza macchina.
+  </div>
+
+  <div id="layout">
+    <div id="drawer-scrim"></div>
+    <aside id="tree-panel"></aside>
+
+    <main id="canvas-wrap">
+      <div id="view-tabs"></div>
+      <div id="svg-host">
+        <svg id="stage" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="foto-host" class="hidden">
+          <img id="foto-img" alt="Foto di riferimento">
+          <div id="foto-label">FOTO DI RIFERIMENTO — NON IN SCALA</div>
+        </div>
+        <div id="vista-placeholder" class="hidden"></div>
+      </div>
+      <div id="canvas-toolbar"></div>
+    </main>
+
+    <aside id="props-panel"></aside>
+  </div>
+
+  <footer id="bottombar">
+    <div id="badge-stato-globale" class="badge-stato st-non-configurato"><span class="icona">◆</span><span id="badge-stato-testo">NON CONFIGURATO</span></div>
+    <div class="spacer"></div>
+    <button id="btn-wizard" class="btn-grande">Inizio controllo collisione</button>
+    <button id="btn-verify" class="btn-grande" disabled>Verifica collisione</button>
+  </footer>
+
+</div>
+
+<div id="modal-overlay" class="hidden">
+  <div id="modal-box">
+    <div id="modal-head"><h2 id="modal-title"></h2><button id="modal-close" aria-label="Chiudi">✕</button></div>
+    <div id="modal-body"></div>
+    <div id="modal-foot"></div>
+  </div>
+</div>
+
+<div id="toast-host"></div>
+
+<input type="file" id="file-open-json" accept="application/json,.json" class="hidden">
+<input type="file" id="file-import-photo" accept="image/*" class="hidden">
+
+<script>
+'use strict';
+/* =====================================================================
+   PIAZZAMENTI E CONTROLLO COLLISIONI
+   Applicazione di pre-verifica geometrica per piazzamenti su fresatrice
+   Mikron Mill P 900. Vedi disclaimer in interfaccia: non è un sistema
+   di sicurezza certificato e non sostituisce simulazione CAM/CNC,
+   Single Block, Dry Run, prova ad avanzamento ridotto, collaudo reale.
+   ===================================================================== */
+
+/* =====================================================================
+   1. COSTANTI, STATI E UTILITÀ GENERICHE
+   ===================================================================== */
+const APP_VERSION = '0.1.0';
+const SCHEMA_VERSION = 1;
+
+// Vocabolario esiti — usare ESCLUSIVAMENTE queste stringhe per gli stati.
+const STATI = Object.freeze({
+  NON_CONFIGURATO: 'NON CONFIGURATO',
+  DATI_INCOMPLETI: 'DATI INCOMPLETI',
+  VERIFICA_NON_ESEGUIBILE: 'VERIFICA NON ESEGUIBILE',
+  COLLISIONE: 'COLLISIONE',
+  MARGINE_INSUFFICIENTE: 'MARGINE INSUFFICIENTE',
+  AVVISO: 'AVVISO',
+  OK: 'NESSUNA INTERFERENZA RILEVATA NEL MODELLO CONFIGURATO'
+});
+
+const COLORI_ORIGINE = { G54:'#2f7dfb', G55:'#e8801f', G56:'#27c46b', G57:'#e0559c', G58:'#9b6bf2', G59:'#d7c22a' };
+const CODICI_ORIGINE = ['G54','G55','G56','G57','G58','G59'];
+
+function uid(prefisso){
+  return (prefisso||'id') + '_' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+}
+
+// Converte un testo numerico accettando sia virgola sia punto come separatore decimale.
+// Ritorna un numero finito, oppure null se il campo è vuoto, oppure NaN se il testo non è un numero valido.
+function parseNumeroIt(testo){
+  if(testo===null || testo===undefined) return null;
+  const t = String(testo).trim();
+  if(t==='') return null;
+  const normalizzato = t.replace(/\s/g,'').replace(',', '.');
+  if(!/^-?\d+(\.\d+)?$/.test(normalizzato)) return NaN;
+  const n = parseFloat(normalizzato);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+// Formatta un numero per la visualizzazione (null -> 'NON CONFIGURATO').
+function formattaNumero(n, decimali){
+  if(n===null || n===undefined || Number.isNaN(n)) return null;
+  const d = decimali===undefined ? 3 : decimali;
+  // rimuove zeri decimali superflui mantenendo precisione leggibile
+  return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toString().replace('.', ',');
+}
+function fmtMm(n){ const f = formattaNumero(n,3); return f===null ? '—' : f + ' mm'; }
+
+function clonaProfondo(o){ return JSON.parse(JSON.stringify(o)); }
+
+function getPath(obj, path){
+  return path.split('.').reduce((a,k)=> (a===null||a===undefined) ? a : a[k], obj);
+}
+function setPath(obj, path, val){
+  const parti = path.split('.');
+  let cur = obj;
+  for(let i=0;i<parti.length-1;i++){
+    if(cur[parti[i]]===undefined || cur[parti[i]]===null) cur[parti[i]] = {};
+    cur = cur[parti[i]];
+  }
+  cur[parti[parti.length-1]] = val;
+}
+
+function debounce(fn, ms){
+  let t=null;
+  return function(...args){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,args), ms); };
+}
+
+// true solo se il valore è un numero configurato (non null, non undefined, non NaN).
+function isNum(v){ return typeof v==='number' && Number.isFinite(v); }
+function tuttiNum(...vals){ return vals.every(isNum); }
+
+/* =====================================================================
+   2. MODELLO DATI
+   Tutti i valori dimensionali/di posizione nascono a null (NON CONFIGURATO).
+   Zero è un valore legittimo distinto da "mancante": non va mai usato
+   come sostituto di un dato non inserito.
+   ===================================================================== */
+
+function creaOrigine(codice){
+  return {
+    codice,
+    descrizione: null,
+    x: null, y: null, z: null,           // coordinate macchina (MCS) dell'origine pezzo
+    colore: COLORI_ORIGINE[codice] || '#64748b',
+    attiva: true
+  };
+}
+
+function creaZonaVietata(){
+  return { id: uid('zona'), nome: null, xMin:null,xMax:null,yMin:null,yMax:null,zMin:null,zMax:null, note:'' };
+}
+
+function creaAttrezzatura(tipo){
+  // tipo: 'piano_magnetico' | 'morsa' | 'altro'
+  return {
+    id: uid('attr'),
+    nome: null,
+    tipo: tipo || 'altro',
+    lunghezzaX: null, larghezzaY: null, altezzaZ: null,   // ingombro in mm
+    x: null, y: null, zBase: null,                         // posizione in MCS (spigolo min, vedi §5 trasformazioni)
+    rotazione: 0,                                          // gradi, attorno al proprio spigolo min in pianta
+    quotaPianoAppoggio: null,                              // quota Z su cui appoggiano i pezzi
+    margineSicurezza: null,
+    fisso: false,
+    zoneIngombro: [],                                      // ingombri aggiuntivi: {id,nome,dx,dy,lunghezzaX,larghezzaY,altezzaZ,zBase}
+    puntiFissaggio: [],                                    // {id,dx,dy} relativi allo spigolo min dell'attrezzatura
+    note: '',
+    extra: tipo==='morsa'
+      ? { apertura:null, larghezzaGanasce:null, altezzaGanasce:null, posGanasciaFissa:null, posGanasciaMobile:null, zonaManovraVite:null }
+      : (tipo==='piano_magnetico' ? { zonaMagneticaUtile:null, bordiNonUtilizzabili:null, connettoriCaviNote:'' } : {})
+  };
+}
+
+function creaPezzo(){
+  return {
+    id: uid('pz'),
+    nome: null,
+    origine: null,           // codice G54..G59
+    supporto: null,           // id attrezzatura oppure 'tavola'
+    ruolo: 'ostacolo',        // 'lavorato' | 'ostacolo'
+    rotazione: 0,             // gradi, applicata nel sistema dell'origine (WCS) prima della traslazione MCS
+    xMin:null,xMax:null,yMin:null,yMax:null,zMin:null,zMax:null,  // rispetto all'origine WCS associata
+    sovrametallo: null,
+    margineSicurezza: null,
+    note: ''
+  };
+}
+
+function creaUtensile(){
+  return {
+    nome:null, diametroFresa:null, lunghezzaTagliente:null, diametroCodolo:null, lunghezzaCodolo:null,
+    sporgenzaTotale:null, diametroPortautensile:null, lunghezzaPortautensile:null,
+    margineRadiale:null, margineAssiale:null
+  };
+}
+
+function creaProgettoVuoto(){
+  const origini = {};
+  CODICI_ORIGINE.forEach(c=> origini[c]=creaOrigine(c));
+  return {
+    schema: SCHEMA_VERSION,
+    appVersion: APP_VERSION,
+    nomeProgetto: null,
+    creatoIl: new Date().toISOString(),
+    modificatoIl: new Date().toISOString(),
+    macchina: {
+      nome: null,
+      unita: 'mm',
+      orientamento: { invertiX:false, invertiY:false },
+      corse: { xMin:null,xMax:null,yMin:null,yMax:null,zMin:null,zMax:null },
+      tavola: { lunghezza:null, larghezza:null, quotaSuperiore:null, posizione:{x:null,y:null,z:null} },
+      zoneVietate: [],
+      quotaMinimaNasoMandrino: null,
+      margineSicurezzaGenerale: null,
+      passoGriglia: null
+    },
+    attrezzature: [],
+    origini,
+    pezzi: [],
+    utensile: null,
+    fotoRiferimento: { dataUrl:null, nomeFile:null, opacita:0.55, visibile:false },
+    ui: { vistaAttiva:'pianta', zoom:1, panX:0, panY:0, snapAttivo:false, grigliaVisibile:true, selezione:null, wizardCompletato:false }
+  };
+}
+
+/* =====================================================================
+   3. MODULO GEOMETRICO PURO (Geo)
+   Nessuna dipendenza da document/window: solo funzioni su numeri e
+   oggetti semplici. Per questo è direttamente testabile in Node
+   (vedi export in fondo al file) e viene usato tale e quale dal motore
+   dei controlli statici e dal renderer SVG.
+   ===================================================================== */
+const Geo = {};
+
+// COORDINATA_MACCHINA = COORDINATA_PEZZO + OFFSET_ORIGINE (§5 delle istruzioni di progetto).
+// Applica prima la rotazione del pezzo attorno al punto origine (nel piano WCS), poi la traslazione MCS.
+Geo.puntoWcsAMcs = function(xWcs, yWcs, origine){
+  if(!tuttiNum(xWcs,yWcs,origine.x,origine.y)) return null;
+  const rot = (origine.rotazioneWcs || 0) * Math.PI/180; // riservato per usi futuri; 0 in v1 (nessuna rotazione di sistema sull'origine)
+  const cos = Math.cos(rot), sin = Math.sin(rot);
+  const xr = xWcs*cos - yWcs*sin;
+  const yr = xWcs*sin + yWcs*cos;
+  return { x: origine.x + xr, y: origine.y + yr };
+};
+
+// Vertici (in ordine, senso antiorario) di un rettangolo definito da centro, semiassi e rotazione in gradi.
+Geo.verticiOBB = function(cx, cy, semiX, semiY, rotDeg){
+  const rot = (rotDeg||0) * Math.PI/180;
+  const cos = Math.cos(rot), sin = Math.sin(rot);
+  const loc = [[-semiX,-semiY],[semiX,-semiY],[semiX,semiY],[-semiX,semiY]];
+  return loc.map(([lx,ly])=>({ x: cx + lx*cos - ly*sin, y: cy + lx*sin + ly*cos }));
+};
+
+// Costruisce l'OBB (in coordinate macchina) di un'attrezzatura, posizionata per spigolo minimo (x,y) + rotazione.
+Geo.obbAttrezzatura = function(attr){
+  if(!tuttiNum(attr.x, attr.y, attr.lunghezzaX, attr.larghezzaY)) return null;
+  const semiX = attr.lunghezzaX/2, semiY = attr.larghezzaY/2;
+  // il centro non ruotato sarebbe (x+semiX, y+semiY); la rotazione avviene attorno allo spigolo min (x,y)
+  const cLoc = { x: semiX, y: semiY };
+  const rot = (attr.rotazione||0)*Math.PI/180;
+  const cos=Math.cos(rot), sin=Math.sin(rot);
+  const cx = attr.x + (cLoc.x*cos - cLoc.y*sin);
+  const cy = attr.y + (cLoc.x*sin + cLoc.y*cos);
+  return { corners: Geo.verticiOBB(cx,cy,semiX,semiY,attr.rotazione||0), cx, cy, zMin: attr.zBase, zMax: isNum(attr.zBase)&&isNum(attr.altezzaZ) ? attr.zBase+attr.altezzaZ : null };
+};
+
+// Costruisce l'OBB (in coordinate macchina) di un pezzo, dato il pezzo e la sua origine.
+Geo.obbPezzo = function(pezzo, origine){
+  if(!origine || !tuttiNum(origine.x, origine.y)) return null;
+  if(!tuttiNum(pezzo.xMin,pezzo.xMax,pezzo.yMin,pezzo.yMax)) return null;
+  const cxWcs = (pezzo.xMin+pezzo.xMax)/2, cyWcs=(pezzo.yMin+pezzo.yMax)/2;
+  const semiX = Math.abs(pezzo.xMax-pezzo.xMin)/2, semiY = Math.abs(pezzo.yMax-pezzo.yMin)/2;
+  // ruota il centro (relativo all'origine) e poi trasla in MCS; i semiassi restano invariati per rotazioni attorno al proprio centro
+  const rot=(pezzo.rotazione||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
+  const cxMcs = origine.x + (cxWcs*cos - cyWcs*sin);
+  const cyMcs = origine.y + (cxWcs*sin + cyWcs*cos);
+  const zMin = isNum(origine.z) && isNum(pezzo.zMin) ? origine.z + pezzo.zMin : null;
+  const zMax = isNum(origine.z) && isNum(pezzo.zMax) ? origine.z + pezzo.zMax : null;
+  return { corners: Geo.verticiOBB(cxMcs,cyMcs,semiX,semiY,pezzo.rotazione||0), cx:cxMcs, cy:cyMcs, zMin, zMax };
+};
+
+Geo._assiDaCorners = function(corners){
+  const lati = [ {x:corners[1].x-corners[0].x,y:corners[1].y-corners[0].y}, {x:corners[2].x-corners[1].x,y:corners[2].y-corners[1].y} ];
+  return lati.map(l=>{ const len=Math.hypot(l.x,l.y)||1; return {x:-l.y/len, y:l.x/len}; });
+};
+Geo._proietta = function(corners, asse){
+  const dots = corners.map(c=>c.x*asse.x + c.y*asse.y);
+  return { min: Math.min(...dots), max: Math.max(...dots) };
+};
+
+// Test SAT esatto per due rettangoli orientati (OBB) nel piano XY.
+// Se separati: ritorna { collide:false, gap } dove "gap" è una stima CONSERVATIVA
+// PER DIFETTO della distanza minima reale (limite inferiore valido lungo l'asse
+// di proiezione più favorevole tra i 4 assi SAT). La distanza reale puo' essere
+// maggiore (mai minore) del gap indicato: per questo il metodo non genera mai
+// falsi negativi di margine, ma può generare falsi positivi in configurazioni
+// "ad angolo" — è la scelta conservativa richiesta dal progetto.
+// Se sovrapposti: ritorna { collide:true, penetrazione, asse } (penetrazione minima = MTV).
+// CASO LIMITE INTENZIONALE — tangenza esatta (gap==0 sull'asse decisivo): la condizione
+// "gap > 0" è una disuguaglianza STRETTA, quindi un contatto a distanza esattamente zero
+// NON viene mai classificato come separato. Ricade nel ramo di sovrapposizione con
+// penetrazione:0. È la scelta conservativa voluta: due elementi che si toccano esattamente
+// non hanno alcun margine reale, quindi il motore li segnala (COLLISIONE, penetrazione 0mm)
+// invece di dichiarare una separazione che non esiste. Vedi caso diagnostico "contatto sul margine".
+Geo.satOBB = function(cornersA, cornersB){
+  const assi = [...Geo._assiDaCorners(cornersA), ...Geo._assiDaCorners(cornersB)];
+  let separato = false, gapMax = -Infinity, penMin = Infinity, assePen = null;
+  for(const asse of assi){
+    const pA = Geo._proietta(cornersA, asse), pB = Geo._proietta(cornersB, asse);
+    const gap = Math.max(pA.min,pB.min) - Math.min(pA.max,pB.max);
+    if(gap > 0){ separato = true; if(gap>gapMax) gapMax = gap; }
+    else { const overlap = -gap; if(overlap < penMin){ penMin = overlap; assePen = asse; } }
+  }
+  if(separato) return { collide:false, gap: gapMax };
+  return { collide:true, penetrazione: penMin, asse: assePen };
+};
+
+// Sovrapposizione di due intervalli Z. Ritorna { collide, gap } con la stessa
+// semantica (gap = separazione reale se collide=false; gap=0 se sovrapposti).
+Geo.overlapZ = function(zMinA,zMaxA,zMinB,zMaxB){
+  if(!tuttiNum(zMinA,zMaxA,zMinB,zMaxB)) return null;
+  const gap = Math.max(zMinA,zMinB) - Math.min(zMaxA,zMaxB);
+  return gap > 0 ? { collide:false, gap } : { collide:true, gap:0, penetrazione:-gap };
+};
+
+// Verifica se l'OBB "interno" è interamente contenuto nel rettangolo AABB "esterno" (es. tavola).
+// Ritorna null se dati insufficienti, altrimenti { contenuto:boolean, sporgenze:{xMin,xMax,yMin,yMax} (mm, >=0) }.
+Geo.contenutoInRettangolo = function(cornersInterno, esterno){
+  if(!cornersInterno || !esterno || !tuttiNum(esterno.xMin,esterno.xMax,esterno.yMin,esterno.yMax)) return null;
+  let sxMin=0, sxMax=0, syMin=0, syMax=0;
+  for(const c of cornersInterno){
+    sxMin = Math.max(sxMin, esterno.xMin - c.x);
+    sxMax = Math.max(sxMax, c.x - esterno.xMax);
+    syMin = Math.max(syMin, esterno.yMin - c.y);
+    syMax = Math.max(syMax, c.y - esterno.yMax);
+  }
+  const contenuto = sxMin<=1e-9 && sxMax<=1e-9 && syMin<=1e-9 && syMax<=1e-9;
+  return { contenuto, sporgenze:{ xMin:Math.max(sxMin,0), xMax:Math.max(sxMax,0), yMin:Math.max(syMin,0), yMax:Math.max(syMax,0) } };
+};
+
+// Combina SAT-XY + overlap Z in un unico giudizio 3D per due volumi con OBB {corners,zMin,zMax}.
+// margineRichiesto: mm, opzionale (default 0).
+Geo.controlla3D = function(volA, volB, margineRichiesto){
+  if(!volA || !volB) return null;
+  const margine = isNum(margineRichiesto) ? margineRichiesto : 0;
+  const sat = Geo.satOBB(volA.corners, volB.corners);
+  const zHaDati = tuttiNum(volA.zMin,volA.zMax,volB.zMin,volB.zMax);
+  const z = zHaDati ? Geo.overlapZ(volA.zMin,volA.zMax,volB.zMin,volB.zMax) : null;
+
+  if(sat.collide && (!zHaDati || z.collide)){
+    return { esito:'COLLISIONE', xyPenetrazione: sat.penetrazione, zPenetrazione: zHaDati? z.penetrazione : null, zVerificato: zHaDati };
+  }
+  if(!sat.collide && zHaDati && !z.collide){
+    // separati solo in Z (nessuna sovrapposizione XY necessaria in tal caso, ma lo segnaliamo come non a rischio)
+    return { esito:'SEPARATI', gapXY: sat.gap, gapZ: null, zVerificato:true };
+  }
+  if(!sat.collide){
+    // separati in XY (con o senza dati Z)
+    if(sat.gap < margine) return { esito:'MARGINE_INSUFFICIENTE', gapXY: sat.gap, margineRichiesto: margine, zVerificato: zHaDati };
+    return { esito:'SEPARATI', gapXY: sat.gap, zVerificato: zHaDati };
+  }
+  // sat.collide === true ma zHaDati === true e z.collide === false -> sovrapposti in XY ma separati in Z: nessuna collisione 3D
+  return { esito:'SEPARATI', gapXY:0, gapZ:z? z.gap:null, notaZ:'Sovrapposti in XY ma separati in Z', zVerificato:true };
+};
+
+// Generalizzazione di contenutoInRettangolo per un contenitore esterno anch'esso orientabile
+// (es. verificare che un pezzo stia dentro un'attrezzatura ruotata). obbEsterno: {cx,cy,semiX,semiY,rotDeg}.
+Geo.contenutoInOBB = function(cornersInterno, obbEsterno){
+  if(!cornersInterno || !obbEsterno || !tuttiNum(obbEsterno.cx,obbEsterno.cy,obbEsterno.semiX,obbEsterno.semiY)) return null;
+  const rot = -(obbEsterno.rotDeg||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
+  let sxMin=0,sxMax=0,syMin=0,syMax=0;
+  for(const c of cornersInterno){
+    const dx=c.x-obbEsterno.cx, dy=c.y-obbEsterno.cy;
+    const lx = dx*cos - dy*sin, ly = dx*sin + dy*cos;
+    sxMin = Math.max(sxMin, -obbEsterno.semiX - lx);
+    sxMax = Math.max(sxMax, lx - obbEsterno.semiX);
+    syMin = Math.max(syMin, -obbEsterno.semiY - ly);
+    syMax = Math.max(syMax, ly - obbEsterno.semiY);
+  }
+  const contenuto = sxMin<=1e-9 && sxMax<=1e-9 && syMin<=1e-9 && syMax<=1e-9;
+  return { contenuto, sporgenze:{xMin:Math.max(sxMin,0),xMax:Math.max(sxMax,0),yMin:Math.max(syMin,0),yMax:Math.max(syMax,0)} };
+};
+
+/* =====================================================================
+   4. MOTORE CONTROLLI STATICI (Motore)
+   Nessuna dipendenza DOM: opera sull'oggetto "progetto" e restituisce un
+   elenco di anomalie + stato per categoria + stato globale, usando
+   ESCLUSIVAMENTE il vocabolario in STATI. Un dato mancante blocca solo
+   la categoria di controllo interessata (mai un falso esito positivo).
+   ===================================================================== */
+const Motore = {};
+
+Motore._tavolaCompleta = function(m){
+  return tuttiNum(m.tavola.lunghezza, m.tavola.larghezza, m.tavola.quotaSuperiore, m.tavola.posizione.x, m.tavola.posizione.y, m.tavola.posizione.z);
+};
+Motore._corseComplete = function(m){
+  const c = m.corse; return tuttiNum(c.xMin,c.xMax,c.yMin,c.yMax,c.zMin,c.zMax);
+};
+Motore._rettangoloTavola = function(m){
+  // convenzione di progetto: tavola.posizione.x/y = spigolo minimo della tavola in MCS
+  return { xMin:m.tavola.posizione.x, xMax:m.tavola.posizione.x+m.tavola.lunghezza, yMin:m.tavola.posizione.y, yMax:m.tavola.posizione.y+m.tavola.larghezza };
+};
+
+function nuovaAnomalia(campi){
+  return Object.assign({
+    id: uid('an'), tipo:'', titolo:'', gravita: STATI.AVVISO, oggetti:[], origineAttiva:null,
+    coordMacchina:[], coordPezzo:[], asse:null, distanzaOPenetrazione:null, margineRichiesto:null,
+    descrizione:'', correzionePossibile:''
+  }, campi);
+}
+
+// Margine richiesto tra due oggetti: usa il maggiore tra i margini configurati. Se ENTRAMBI
+// sono null, ritorna null (nessun margine richiesto configurato) — MAI sostituito con 0.
+function margineCoppia(a,b){
+  const ma = isNum(a.margineSicurezza) ? a.margineSicurezza : null;
+  const mb = isNum(b.margineSicurezza) ? b.margineSicurezza : null;
+  if(ma===null && mb===null) return null;
+  return Math.max(ma===null?-Infinity:ma, mb===null?-Infinity:mb);
+}
+
+function esitoAGravita(esito){
+  if(esito==='COLLISIONE') return STATI.COLLISIONE;
+  if(esito==='MARGINE_INSUFFICIENTE') return STATI.MARGINE_INSUFFICIENTE;
+  return null; // 'SEPARATI' -> nessuna anomalia
+}
+
+// Confronta due volumi (con relativi descrittori per il report) e produce 0/1 anomalia.
+function confrontaVolumi(descA, volA, descB, volB, margine, tipoBase, contesto){
+  if(!volA || !volB) return null;
+  const r = Geo.controlla3D(volA, volB, margine);
+  const gravita = esitoAGravita(r.esito);
+  if(!gravita) return null;
+  const distanza = r.esito==='COLLISIONE' ? -(r.xyPenetrazione) : r.gapXY;
+  return nuovaAnomalia({
+    tipo: tipoBase,
+    titolo: (gravita===STATI.COLLISIONE ? 'Collisione: ' : 'Margine insufficiente: ') + descA.nome + ' ↔ ' + descB.nome,
+    gravita,
+    oggetti:[ {tipo:descA.tipo,id:descA.id,nome:descA.nome}, {tipo:descB.tipo,id:descB.id,nome:descB.nome} ],
+    origineAttiva: contesto && contesto.origineAttiva || null,
+    coordMacchina:[ {nome:descA.nome, x:volA.cx, y:volA.cy, z:volA.zMin}, {nome:descB.nome, x:volB.cx, y:volB.cy, z:volB.zMin} ],
+    coordPezzo: contesto && contesto.coordPezzo || [],
+    asse:'XY',
+    distanzaOPenetrazione: distanza,
+    margineRichiesto: margine,
+    descrizione: gravita===STATI.COLLISIONE
+      ? ('Le geometrie di "'+descA.nome+'" e "'+descB.nome+'" si sovrappongono nel piano XY (e negli intervalli Z, dove verificati) di circa '+fmtMm(r.xyPenetrazione)+'.')
+      : ('Distanza minima stimata (limite inferiore conservativo) tra "'+descA.nome+'" e "'+descB.nome+'": '+fmtMm(r.gapXY)+', inferiore al margine richiesto di '+fmtMm(margine)+'.'),
+    correzionePossibile: gravita===STATI.COLLISIONE
+      ? 'Modificare posizione/rotazione di uno dei due elementi finché le geometrie non risultano separate, oppure correggere le dimensioni inserite se errate.'
+      : 'Aumentare la distanza tra gli elementi oppure ridurre il margine di sicurezza richiesto se coerente con le reali esigenze di lavorazione.'
+  });
+}
+
+Motore.eseguiControlli = function(progetto){
+  const m = progetto.macchina;
+  const anomalie = [];
+  const catStati = {}; // categoria -> stato quando non produce anomalie puntuali (es. DATI_INCOMPLETI)
+
+  const attrezzatureOk = progetto.attrezzature.filter(a=>Geo.obbAttrezzatura(a));
+  const attrezzatureIncomplete = progetto.attrezzature.filter(a=>!Geo.obbAttrezzatura(a));
+  attrezzatureIncomplete.forEach(a=>{
+    anomalie.push(nuovaAnomalia({ tipo:'ATTREZZATURA_NON_CONFIGURATA', titolo:'Attrezzatura non configurata: '+(a.nome||a.id),
+      gravita: STATI.NON_CONFIGURATO, oggetti:[{tipo:'attrezzatura',id:a.id,nome:a.nome||'(senza nome)'}],
+      descrizione:'Mancano una o più quote/posizioni obbligatorie (lunghezza X, larghezza Y, posizione X/Y).',
+      correzionePossibile:'Completare i campi in ATTREZZATURE.' }));
+  });
+
+  // CAT 1: attrezzature entro la tavola
+  if(!Motore._tavolaCompleta(m)){
+    catStati.attrezzatureInTavola = STATI.DATI_INCOMPLETI;
+    if(progetto.attrezzature.length>0) anomalie.push(nuovaAnomalia({ tipo:'DATI_INCOMPLETI_TAVOLA',
+      titolo:'Verifica attrezzature/tavola non eseguibile', gravita: STATI.DATI_INCOMPLETI,
+      descrizione:'Dimensioni o posizione della tavola non complete: impossibile verificare se le attrezzature restano entro il piano di lavoro.',
+      correzionePossibile:'Completare MACCHINA → Tavola.' }));
+  } else {
+    const rettTavola = Motore._rettangoloTavola(m);
+    attrezzatureOk.forEach(a=>{
+      const obb = Geo.obbAttrezzatura(a);
+      const r = Geo.contenutoInRettangolo(obb.corners, rettTavola);
+      if(r && !r.contenuto){
+        const assiCoinvolti = Object.entries(r.sporgenze).filter(([k,v])=>v>1e-9).map(([k])=>k);
+        anomalie.push(nuovaAnomalia({ tipo:'ATTREZZATURA_FUORI_TAVOLA', titolo:'Attrezzatura fuori tavola: '+(a.nome||a.id),
+          gravita: STATI.COLLISIONE, oggetti:[{tipo:'attrezzatura',id:a.id,nome:a.nome}],
+          coordMacchina:[{nome:a.nome,x:a.x,y:a.y,z:a.zBase}], asse: assiCoinvolti.join(','),
+          distanzaOPenetrazione: Math.max(...Object.values(r.sporgenze)),
+          descrizione:'L\'attrezzatura sporge dal piano tavola configurato di circa '+fmtMm(Math.max(...Object.values(r.sporgenze)))+' ('+assiCoinvolti.join(', ')+').',
+          correzionePossibile:'Riposizionare l\'attrezzatura entro i limiti della tavola oppure verificare le quote inserite.' }));
+      }
+    });
+  }
+
+  // CAT 2: attrezzatura contro attrezzatura (incluse zone ingombro aggiuntive come OBB satellite)
+  function obbZonaIngombro(a, z){
+    if(!tuttiNum(a.x,a.y,z.dx,z.dy,z.lunghezzaX,z.larghezzaY)) return null;
+    const rot=(a.rotazione||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
+    const px = a.x + (z.dx*cos - z.dy*sin), py = a.y + (z.dx*sin + z.dy*cos);
+    const cx = px + z.lunghezzaX/2, cy = py + z.larghezzaY/2; // approssimazione: zona non ruotata rispetto all'attrezzatura per semplicità v1
+    const zB = isNum(z.zBase)?z.zBase:a.zBase;
+    return { corners: Geo.verticiOBB(cx,cy,z.lunghezzaX/2,z.larghezzaY/2,a.rotazione||0), cx,cy, zMin:zB, zMax: isNum(zB)&&isNum(z.altezzaZ)? zB+z.altezzaZ : null };
+  }
+  for(let i=0;i<attrezzatureOk.length;i++){
+    for(let j=i+1;j<attrezzatureOk.length;j++){
+      const A=attrezzatureOk[i], B=attrezzatureOk[j];
+      const an = confrontaVolumi({tipo:'attrezzatura',id:A.id,nome:A.nome||A.id}, Geo.obbAttrezzatura(A),
+                                  {tipo:'attrezzatura',id:B.id,nome:B.nome||B.id}, Geo.obbAttrezzatura(B),
+                                  margineCoppia(A,B), 'ATTREZZATURA_CONTRO_ATTREZZATURA');
+      if(an) anomalie.push(an);
+    }
+  }
+
+  // CAT 3+4+5+6: pezzi (pezzo-pezzo, pezzo-supporto, pezzo-tavola, pezzo-altra attrezzatura)
+  const rettTavolaDisp = Motore._tavolaCompleta(m) ? Motore._rettangoloTavola(m) : null;
+  const pezziValidi = [];
+  progetto.pezzi.forEach(p=>{
+    const origine = p.origine ? progetto.origini[p.origine] : null;
+    if(!p.origine){
+      anomalie.push(nuovaAnomalia({ tipo:'PEZZO_SENZA_ORIGINE', titolo:'Pezzo senza origine associata: '+(p.nome||p.id),
+        gravita: STATI.NON_CONFIGURATO, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}],
+        descrizione:'Il pezzo non è associato a nessuna origine G54–G59.', correzionePossibile:'Assegnare un\'origine in PEZZI.' }));
+      return;
+    }
+    if(!origine || !tuttiNum(origine.x,origine.y)){
+      anomalie.push(nuovaAnomalia({ tipo:'ORIGINE_NON_CONFIGURATA', titolo:'Origine '+p.origine+' non configurata (richiesta da: '+(p.nome||p.id)+')',
+        gravita: STATI.DATI_INCOMPLETI, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome||p.id},{tipo:'origine',id:p.origine,nome:p.origine}],
+        origineAttiva:p.origine,
+        descrizione:'Le coordinate macchina X/Y dell\'origine '+p.origine+' non sono configurate: impossibile collocare il pezzo nel sistema macchina.',
+        correzionePossibile:'Completare ORIGINI → '+p.origine+'.' }));
+      return;
+    }
+    const obb = Geo.obbPezzo(p, origine);
+    if(!obb){
+      anomalie.push(nuovaAnomalia({ tipo:'PEZZO_NON_CONFIGURATO', titolo:'Pezzo non configurato: '+(p.nome||p.id),
+        gravita: STATI.NON_CONFIGURATO, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}], origineAttiva:p.origine,
+        descrizione:'Mancano una o più quote X min/max, Y min/max rispetto all\'origine.', correzionePossibile:'Completare i campi in PEZZI.' }));
+      return;
+    }
+    pezziValidi.push({p, origine, obb});
+  });
+
+  for(let i=0;i<pezziValidi.length;i++){
+    for(let j=i+1;j<pezziValidi.length;j++){
+      const A=pezziValidi[i], B=pezziValidi[j];
+      const an = confrontaVolumi({tipo:'pezzo',id:A.p.id,nome:A.p.nome||A.p.id}, A.obb,
+                                  {tipo:'pezzo',id:B.p.id,nome:B.p.nome||B.p.id}, B.obb,
+                                  margineCoppia(A.p,B.p), 'PEZZO_CONTRO_PEZZO',
+                                  {coordPezzo:[{nome:A.p.nome,origine:A.p.origine,xMin:A.p.xMin,xMax:A.p.xMax,yMin:A.p.yMin,yMax:A.p.yMax},
+                                               {nome:B.p.nome,origine:B.p.origine,xMin:B.p.xMin,xMax:B.p.xMax,yMin:B.p.yMin,yMax:B.p.yMax}]});
+      if(an) anomalie.push(an);
+    }
+  }
+
+  pezziValidi.forEach(({p,origine,obb})=>{
+    // CAT 4: pezzo entro il proprio supporto (attrezzatura o tavola)
+    if(p.supporto === 'tavola'){
+      if(rettTavolaDisp){
+        const r = Geo.contenutoInRettangolo(obb.corners, rettTavolaDisp);
+        if(r && !r.contenuto){
+          anomalie.push(nuovaAnomalia({ tipo:'PEZZO_FUORI_TAVOLA', titolo:'Pezzo fuori dalla tavola: '+(p.nome||p.id),
+            gravita: STATI.COLLISIONE, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome}], origineAttiva:p.origine,
+            coordMacchina:[{nome:p.nome,x:obb.cx,y:obb.cy,z:obb.zMin}], asse:'XY',
+            distanzaOPenetrazione: Math.max(...Object.values(r.sporgenze)),
+            descrizione:'Il pezzo sporge dalla tavola di circa '+fmtMm(Math.max(...Object.values(r.sporgenze)))+'.',
+            correzionePossibile:'Correggere l\'origine associata o le quote del pezzo.' }));
+        }
+      } else {
+        catStati.pezzoInTavola = STATI.DATI_INCOMPLETI;
+      }
+    } else if(p.supporto){
+      const attr = progetto.attrezzature.find(a=>a.id===p.supporto);
+      const obbAttr = attr ? Geo.obbAttrezzatura(attr) : null;
+      if(!attr){
+        anomalie.push(nuovaAnomalia({ tipo:'SUPPORTO_NON_TROVATO', titolo:'Supporto non trovato per pezzo: '+(p.nome||p.id),
+          gravita: STATI.DATI_INCOMPLETI, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome}], origineAttiva:p.origine,
+          descrizione:'Il pezzo fa riferimento a un\'attrezzatura di supporto non presente nel progetto.',
+          correzionePossibile:'Riassegnare il supporto in PEZZI.' }));
+      } else if(!obbAttr){
+        anomalie.push(nuovaAnomalia({ tipo:'DATI_INCOMPLETI_SUPPORTO', titolo:'Verifica supporto non eseguibile: '+(p.nome||p.id),
+          gravita: STATI.DATI_INCOMPLETI, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome},{tipo:'attrezzatura',id:attr.id,nome:attr.nome}],
+          origineAttiva:p.origine, descrizione:'L\'attrezzatura di supporto "'+(attr.nome||attr.id)+'" non ha dati sufficienti per calcolarne l\'ingombro.',
+          correzionePossibile:'Completare le quote dell\'attrezzatura in ATTREZZATURE.' }));
+      } else {
+        const semiX=attr.lunghezzaX/2, semiY=attr.larghezzaY/2;
+        const r = Geo.contenutoInOBB(obb.corners, {cx:obbAttr.cx,cy:obbAttr.cy,semiX,semiY,rotDeg:attr.rotazione||0});
+        if(r && !r.contenuto){
+          anomalie.push(nuovaAnomalia({ tipo:'PEZZO_FUORI_SUPPORTO', titolo:'Pezzo fuori dal piano di appoggio: '+(p.nome||p.id),
+            gravita: STATI.COLLISIONE, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome},{tipo:'attrezzatura',id:attr.id,nome:attr.nome}],
+            origineAttiva:p.origine, coordMacchina:[{nome:p.nome,x:obb.cx,y:obb.cy,z:obb.zMin}], asse:'XY',
+            distanzaOPenetrazione: Math.max(...Object.values(r.sporgenze)),
+            descrizione:'Il pezzo sporge dal piano di appoggio di "'+(attr.nome||attr.id)+'" di circa '+fmtMm(Math.max(...Object.values(r.sporgenze)))+'.',
+            correzionePossibile:'Riposizionare il pezzo (o l\'origine associata) entro l\'ingombro dell\'attrezzatura.' }));
+        }
+      }
+    } else {
+      anomalie.push(nuovaAnomalia({ tipo:'PEZZO_SENZA_SUPPORTO', titolo:'Pezzo senza supporto assegnato: '+(p.nome||p.id),
+        gravita: STATI.NON_CONFIGURATO, oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome}], origineAttiva:p.origine,
+        descrizione:'Non è indicato se il pezzo è montato su piano magnetico, morsa o tavola.', correzionePossibile:'Completare il campo Supporto in PEZZI.' }));
+    }
+
+    // CAT 6: pezzo contro attrezzature diverse dal proprio supporto
+    attrezzatureOk.forEach(a=>{
+      if(a.id === p.supporto) return;
+      const an = confrontaVolumi({tipo:'pezzo',id:p.id,nome:p.nome||p.id}, obb,
+                                  {tipo:'attrezzatura',id:a.id,nome:a.nome||a.id}, Geo.obbAttrezzatura(a),
+                                  margineCoppia(p,a), 'PEZZO_CONTRO_ALTRA_ATTREZZATURA', {origineAttiva:p.origine});
+      if(an) anomalie.push(an);
+    });
+  });
+
+  // CAT 8: superamento corse macchina
+  if(!Motore._corseComplete(m)){
+    catStati.corse = STATI.DATI_INCOMPLETI;
+    if(progetto.attrezzature.length>0 || progetto.pezzi.length>0){
+      anomalie.push(nuovaAnomalia({ tipo:'DATI_INCOMPLETI_CORSE', titolo:'Verifica corse macchina non eseguibile', gravita: STATI.DATI_INCOMPLETI,
+        descrizione:'Le corse macchina (X/Y/Z min-max) non sono configurate: impossibile verificare eventuali superamenti.',
+        correzionePossibile:'Completare MACCHINA → Corse.' }));
+    }
+  } else {
+    const c = m.corse;
+    function verificaCorse(desc, xMin,xMax,yMin,yMax,zMin,zMax, origineAttiva){
+      const fuori = [];
+      if(isNum(xMin)&&xMin<c.xMin) fuori.push(['X', c.xMin-xMin, c.xMin]); if(isNum(xMax)&&xMax>c.xMax) fuori.push(['X', xMax-c.xMax, c.xMax]);
+      if(isNum(yMin)&&yMin<c.yMin) fuori.push(['Y', c.yMin-yMin, c.yMin]); if(isNum(yMax)&&yMax>c.yMax) fuori.push(['Y', yMax-c.yMax, c.yMax]);
+      if(isNum(zMin)&&zMin<c.zMin) fuori.push(['Z', c.zMin-zMin, c.zMin]); if(isNum(zMax)&&zMax>c.zMax) fuori.push(['Z', zMax-c.zMax, c.zMax]);
+      if(fuori.length===0) return;
+      const assi = [...new Set(fuori.map(f=>f[0]))].join(',');
+      const maxSup = Math.max(...fuori.map(f=>f[1]));
+      anomalie.push(nuovaAnomalia({ tipo:'SUPERAMENTO_CORSE', titolo:'Superamento corse macchina: '+desc.nome, gravita: STATI.COLLISIONE,
+        oggetti:[{tipo:desc.tipo,id:desc.id,nome:desc.nome}], origineAttiva: origineAttiva||null,
+        coordMacchina:[{nome:desc.nome,x:xMin,y:yMin,z:zMin}], asse: assi, distanzaOPenetrazione: maxSup,
+        descrizione:'"'+desc.nome+'" eccede i limiti corsa configurati sull\'asse '+assi+' di circa '+fmtMm(maxSup)+'.',
+        correzionePossibile:'Verificare posizione/quote oppure i limiti corsa inseriti in MACCHINA.' }));
+    }
+    attrezzatureOk.forEach(a=>{
+      const obb = Geo.obbAttrezzatura(a);
+      const xs = obb.corners.map(p=>p.x), ys = obb.corners.map(p=>p.y);
+      verificaCorse({tipo:'attrezzatura',id:a.id,nome:a.nome||a.id}, Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys), obb.zMin, obb.zMax);
+    });
+    pezziValidi.forEach(({p,obb})=>{
+      const xs = obb.corners.map(pt=>pt.x), ys = obb.corners.map(pt=>pt.y);
+      verificaCorse({tipo:'pezzo',id:p.id,nome:p.nome||p.id}, Math.min(...xs),Math.max(...xs),Math.min(...ys),Math.max(...ys), obb.zMin, obb.zMax, p.origine);
+    });
+    CODICI_ORIGINE.forEach(cod=>{
+      const o = progetto.origini[cod];
+      if(o.attiva && tuttiNum(o.x,o.y,o.z)) verificaCorse({tipo:'origine',id:cod,nome:cod}, o.x,o.x,o.y,o.y,o.z,o.z, cod);
+    });
+  }
+
+  // CAT 9: zone vietate
+  m.zoneVietate.forEach(z=>{
+    if(!tuttiNum(z.xMin,z.xMax,z.yMin,z.yMax)) return;
+    const cz = { corners: Geo.verticiOBB((z.xMin+z.xMax)/2,(z.yMin+z.yMax)/2, Math.abs(z.xMax-z.xMin)/2, Math.abs(z.yMax-z.yMin)/2, 0),
+                 cx:(z.xMin+z.xMax)/2, cy:(z.yMin+z.yMax)/2, zMin: isNum(z.zMin)?z.zMin:null, zMax: isNum(z.zMax)?z.zMax:null };
+    [...attrezzatureOk.map(a=>({d:{tipo:'attrezzatura',id:a.id,nome:a.nome||a.id}, v:Geo.obbAttrezzatura(a)})),
+     ...pezziValidi.map(({p,obb})=>({d:{tipo:'pezzo',id:p.id,nome:p.nome||p.id}, v:obb}))
+    ].forEach(({d,v})=>{
+      const an = confrontaVolumi({tipo:'zona_vietata',id:z.id,nome:z.nome||'Zona vietata'}, cz, d, v, 0, 'ZONA_VIETATA');
+      if(an){ an.gravita = STATI.COLLISIONE; an.titolo = 'Intersezione con zona vietata: '+d.nome; anomalie.push(an); }
+    });
+  });
+
+  // Rollup stato globale (ordine di priorità dal più al meno urgente)
+  const presenti = new Set(anomalie.map(a=>a.gravita));
+  Object.values(catStati).forEach(s=>presenti.add(s));
+  const nulla = progetto.attrezzature.length===0 && progetto.pezzi.length===0;
+  let globale;
+  if(presenti.has(STATI.COLLISIONE)) globale = STATI.COLLISIONE;
+  else if(presenti.has(STATI.MARGINE_INSUFFICIENTE)) globale = STATI.MARGINE_INSUFFICIENTE;
+  else if(nulla) globale = STATI.VERIFICA_NON_ESEGUIBILE;
+  else if(presenti.has(STATI.DATI_INCOMPLETI)) globale = STATI.DATI_INCOMPLETI;
+  else if(presenti.has(STATI.NON_CONFIGURATO)) globale = STATI.NON_CONFIGURATO;
+  else globale = STATI.OK;
+
+  return { globale, anomalie, catStati, contatori:{
+    collisioni: anomalie.filter(a=>a.gravita===STATI.COLLISIONE).length,
+    margini: anomalie.filter(a=>a.gravita===STATI.MARGINE_INSUFFICIENTE).length,
+    incompleti: anomalie.filter(a=>a.gravita===STATI.DATI_INCOMPLETI||a.gravita===STATI.NON_CONFIGURATO).length
+  }, note:[ 'Controllo dinamico utensile/percorso: NON ESEGUITO (funzionalità non disponibile in questa versione dell\'app).' ] };
+};
+
+if(typeof module !== 'undefined' && module.exports){
+  module.exports = { Geo, Motore, creaOrigine, creaAttrezzatura, creaPezzo, creaUtensile, creaZonaVietata, creaProgettoVuoto, parseNumeroIt, STATI, isNum, CODICI_ORIGINE };
+}
+/* ===== FINE MODULO PURO (Geo + Motore + modello dati) — testabile in Node ===== */
+
+/* =====================================================================
+   5. UI DI BASE: toast e modale generico (dipendono dal DOM)
+   ===================================================================== */
+function mostraToast(msg, tipo){
+  const host = document.getElementById('toast-host');
+  const el = document.createElement('div');
+  el.className = 'toast' + (tipo ? ' '+tipo : '');
+  el.textContent = msg;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 3200);
+}
+
+let _modalRenderCorrente = null;
+function apriModal(titolo, renderFn, opz){
+  opz = opz || {};
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  document.getElementById('modal-title').textContent = titolo;
+  box.classList.toggle('largo', !!opz.largo);
+  _modalRenderCorrente = renderFn;
+  const body = document.getElementById('modal-body'), foot = document.getElementById('modal-foot');
+  body.innerHTML=''; foot.innerHTML='';
+  renderFn(body, foot);
+  overlay.classList.remove('hidden');
+}
+function riDisegnaModal(){
+  if(!_modalRenderCorrente) return;
+  const body = document.getElementById('modal-body'), foot = document.getElementById('modal-foot');
+  body.innerHTML=''; foot.innerHTML='';
+  _modalRenderCorrente(body, foot);
+}
+function chiudiModal(){
+  document.getElementById('modal-overlay').classList.add('hidden');
+  _modalRenderCorrente = null;
+}
+function apriConferma(messaggio, onConferma, labelOk){
+  apriModal('Conferma', (body,foot)=>{
+    const p = document.createElement('p'); p.style.fontSize='13px'; p.style.color='var(--tx-mid)'; p.textContent = messaggio;
+    body.appendChild(p);
+    const bAnnulla = document.createElement('button'); bAnnulla.className='btn'; bAnnulla.textContent='Annulla'; bAnnulla.onclick=chiudiModal;
+    const bOk = document.createElement('button'); bOk.className='btn pericolo'; bOk.textContent = labelOk||'Conferma'; bOk.onclick=()=>{ chiudiModal(); onConferma(); };
+    foot.appendChild(bAnnulla); foot.appendChild(bOk);
+  });
+}
+
+/* =====================================================================
+   6. STATO APPLICAZIONE E PERSISTENZA
+   Salvataggio: poiché l'app è un singolo file HTML statico senza server,
+   "Salva"/"Salva con nome" generano un download del file JSON (il
+   browser non può sovrascrivere in modo invisibile il file originale
+   senza un gesto utente). L'autosalvataggio usa invece localStorage,
+   in modo silenzioso, per proteggere dalla chiusura accidentale della scheda.
+   ===================================================================== */
+let progetto = creaProgettoVuoto();
+let nomeFileCorrente = null;
+let ultimoRisultato = null; // ultimo esito di Motore.eseguiControlli
+const CHIAVE_AUTOSAVE = 'piazzamenti_cc_autosave_v1';
+
+function segnaModificato(){
+  progetto.modificatoIl = new Date().toISOString();
+  salvaAutosaveDebounced();
+  aggiornaAbilitazioneVerifica();
+  if(typeof riDisegnaTutto === 'function') riDisegnaTutto();
+}
+
+function salvaAutosaveNow(){
+  try{
+    localStorage.setItem(CHIAVE_AUTOSAVE, JSON.stringify(progetto));
+  }catch(e){
+    // quota superata o storage non disponibile: riprova senza la foto (spesso la causa dell'eccesso di spazio)
+    try{
+      const copia = clonaProfondo(progetto);
+      copia.fotoRiferimento.dataUrl = null;
+      localStorage.setItem(CHIAVE_AUTOSAVE, JSON.stringify(copia));
+      mostraToast('Autosalvataggio riuscito, ma la foto di riferimento è troppo grande per essere salvata automaticamente.', 'err');
+    }catch(e2){
+      mostraToast('Autosalvataggio non riuscito (memoria locale non disponibile).', 'err');
+    }
+  }
+}
+const salvaAutosaveDebounced = debounce(salvaAutosaveNow, 600);
+
+function caricaAutosave(){
+  try{
+    const raw = localStorage.getItem(CHIAVE_AUTOSAVE);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+
+// Unisce un progetto caricato (JSON esterno o autosave) con la struttura corrente,
+// così un file più vecchio senza alcuni campi recenti non rompe l'app (i campi mancanti
+// restano al loro default "non configurato", MAI sostituiti con zero).
+function normalizzaProgettoCaricato(dati){
+  const base = creaProgettoVuoto();
+  function fondi(target, src){
+    if(src===null || src===undefined || typeof src !== 'object' || Array.isArray(src)) return src===undefined ? target : src;
+    const out = Array.isArray(target) ? [] : Object.assign({}, target);
+    Object.keys(src).forEach(k=>{
+      out[k] = (typeof src[k]==='object' && src[k]!==null && !Array.isArray(src[k]) && typeof target[k]==='object' && target[k]!==null)
+        ? fondi(target[k], src[k]) : src[k];
+    });
+    return out;
+  }
+  const fuso = fondi(base, dati||{});
+  // le origini G54-G59 devono sempre esistere tutte, anche se il file importato ne aveva solo alcune
+  CODICI_ORIGINE.forEach(c=>{ if(!fuso.origini[c]) fuso.origini[c] = creaOrigine(c); });
+  return fuso;
+}
+
+function nuovoProgetto(){
+  apriConferma('Creare un nuovo progetto? Le modifiche non salvate su file andranno perse (resta comunque una copia in autosalvataggio locale fino alla prossima chiusura).', ()=>{
+    progetto = creaProgettoVuoto();
+    nomeFileCorrente = null;
+    ultimoRisultato = null;
+    salvaAutosaveNow();
+    riDisegnaAppCompleta();
+    mostraToast('Nuovo progetto creato.', 'ok');
+  }, 'Nuovo progetto');
+}
+
+function apriProgettoJSON(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const dati = JSON.parse(reader.result);
+      progetto = normalizzaProgettoCaricato(dati);
+      nomeFileCorrente = file.name.replace(/\.json$/i,'');
+      ultimoRisultato = null;
+      salvaAutosaveNow();
+      riDisegnaAppCompleta();
+      mostraToast('Progetto "'+file.name+'" caricato.', 'ok');
+    }catch(e){
+      mostraToast('Impossibile leggere il file: JSON non valido.', 'err');
+    }
+  };
+  reader.onerror = ()=> mostraToast('Errore durante la lettura del file.', 'err');
+  reader.readAsText(file);
+}
+
+function scaricaTesto(nomeFile, contenuto, mime){
+  const blob = new Blob([contenuto], {type: mime||'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nomeFile;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+
+function generaNomeFileDefault(){
+  const base = (progetto.nomeProgetto || 'progetto-piazzamenti').trim().replace(/[^a-z0-9\-_]+/gi,'_');
+  return base + '.json';
+}
+
+function salvaProgetto(){
+  const nome = nomeFileCorrente ? nomeFileCorrente+'.json' : generaNomeFileDefault();
+  scaricaTesto(nome, JSON.stringify(progetto, null, 2));
+  if(!nomeFileCorrente) nomeFileCorrente = nome.replace(/\.json$/i,'');
+  mostraToast('File "'+nome+'" scaricato. Il browser non può sovrascrivere il file originale: salva questa nuova copia dove preferisci.', 'ok');
+}
+
+function salvaProgettoConNome(){
+  apriModal('Salva con nome', (body,foot)=>{
+    body.innerHTML = '<div class="campo"><label>Nome file (senza estensione)</label><input type="text" id="input-nome-salva" value="'+(nomeFileCorrente||progetto.nomeProgetto||'progetto-piazzamenti')+'"></div>';
+    const bAnnulla=document.createElement('button'); bAnnulla.className='btn'; bAnnulla.textContent='Annulla'; bAnnulla.onclick=chiudiModal;
+    const bSalva=document.createElement('button'); bSalva.className='btn primario'; bSalva.textContent='Scarica JSON';
+    bSalva.onclick=()=>{
+      const v = document.getElementById('input-nome-salva').value.trim() || 'progetto-piazzamenti';
+      nomeFileCorrente = v.replace(/\.json$/i,'');
+      progetto.nomeProgetto = nomeFileCorrente;
+      scaricaTesto(nomeFileCorrente+'.json', JSON.stringify(progetto,null,2));
+      chiudiModal();
+      mostraToast('File "'+nomeFileCorrente+'.json" scaricato.', 'ok');
+      riDisegnaAppCompleta();
+    };
+    foot.appendChild(bAnnulla); foot.appendChild(bSalva);
+  });
+}
+
+function chiudiProgettoMenu(){
+  apriConferma('Chiudere il progetto corrente? Verrà mostrato un progetto vuoto (i dati restano recuperabili dall\'ultimo autosalvataggio finché non ne crei uno nuovo).', ()=>{
+    progetto = creaProgettoVuoto();
+    nomeFileCorrente = null;
+    riDisegnaAppCompleta();
+  }, 'Chiudi progetto');
+}
+
+function importaFotoFile(file){
+  if(!file.type.startsWith('image/')){ mostraToast('Seleziona un file immagine valido.', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    progetto.fotoRiferimento.dataUrl = reader.result;
+    progetto.fotoRiferimento.nomeFile = file.name;
+    progetto.fotoRiferimento.visibile = true;
+    segnaModificato();
+    if(progetto.ui.vistaAttiva!=='foto'){ progetto.ui.vistaAttiva='foto'; }
+    riDisegnaAppCompleta();
+    mostraToast('Foto "'+file.name+'" caricata come riferimento (non in scala).', 'ok');
+  };
+  reader.onerror = ()=> mostraToast('Errore nel caricamento della foto.', 'err');
+  reader.readAsDataURL(file);
+}
+
+/* =====================================================================
+   7. RENDERING VISTA PIANTA (XY) — SVG
+   Convenzione: il gruppo <g id="camera"> applica pan/zoom interattivi
+   sopra una scala "di base" che adatta la tavola alla finestra. Le
+   coordinate macchina (mm) vengono mappate in coordinate locali con
+   mmALocale/localeAMm, che tengono conto dell'orientamento assi
+   configurato in MACCHINA. Elementi di dimensione costante a schermo
+   (tratti, marker, testo) dividono per la scala effettiva.
+   ===================================================================== */
+// Colori risolti (stessi valori delle custom property CSS in :root) da usare SOLO per gli
+// attributi di presentazione SVG (fill/stroke/filter impostati via setAttribute): il supporto
+// di var(--...) dentro tali attributi non è garantito in modo uniforme su tutti i motori di
+// rendering, quindi qui si evita del tutto l'incertezza usando valori letterali.
+const COLORI = {
+  steel:'#64748b', steelFill:'rgba(100,116,139,.30)',
+  plate:'#2f7dfb', plateFill:'rgba(47,125,251,.26)',
+  vise:'#e8801f', viseFill:'rgba(232,128,31,.26)',
+  piece:'#9b6bf2', pieceFill:'rgba(155,107,242,.24)',
+  active:'#27c46b', activeFill:'rgba(39,196,107,.24)',
+  danger:'#ef4444', dangerFill:'rgba(239,68,68,.26)',
+  warn:'#f5a524', warnFill:'rgba(245,165,36,.24)',
+  missing:'#38bdf8', missingFill:'rgba(56,189,248,.16)',
+  accent:'#38bdf8'
+};
+const NS_SVG = 'http://www.w3.org/2000/svg';
+function elSvg(tag, attrs){
+  const e = document.createElementNS(NS_SVG, tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>{ if(v!==undefined && v!==null) e.setAttribute(k, v); });
+  return e;
+}
+
+const Vista = { camera:{ scalaBase:1, offsetX:0, offsetY:0 } };
+
+function assiSegno(){
+  const o = (progetto.macchina.orientamento)||{invertiX:false,invertiY:false};
+  return { sx:o.invertiX?-1:1, sy:o.invertiY?-1:1 };
+}
+function mmALocale(xMm,yMm){ const s=assiSegno(); return { x:xMm*s.sx, y:-yMm*s.sy }; }
+function localeAMm(xLoc,yLoc){ const s=assiSegno(); return { x:xLoc/s.sx, y:-yLoc/s.sy }; }
+function effettivaScala(){ return Vista.camera.scalaBase * (progetto.ui.zoom||1); }
+function clampZoom(z){ return Math.max(0.08, Math.min(25, z)); }
+
+function cameraTransform(){
+  const c = Vista.camera;
+  return 'translate('+(c.offsetX+progetto.ui.panX)+','+(c.offsetY+progetto.ui.panY)+') scale('+effettivaScala()+')';
+}
+
+function calcolaCamera(){
+  const host = document.getElementById('svg-host');
+  const w = Math.max(host.clientWidth,50), h = Math.max(host.clientHeight,50);
+  const svg = document.getElementById('stage');
+  svg.setAttribute('viewBox','0 0 '+w+' '+h);
+  svg.setAttribute('width',w); svg.setAttribute('height',h);
+
+  const m = progetto.macchina;
+  if(!Motore._tavolaCompleta(m)){ Vista.camera = {scalaBase:1, offsetX:w/2, offsetY:h/2}; return; }
+  const r = Motore._rettangoloTavola(m);
+  const angoli = [[r.xMin,r.yMin],[r.xMax,r.yMin],[r.xMax,r.yMax],[r.xMin,r.yMax]].map(([x,y])=>mmALocale(x,y));
+  const locXMin=Math.min(...angoli.map(a=>a.x)), locXMax=Math.max(...angoli.map(a=>a.x));
+  const locYMin=Math.min(...angoli.map(a=>a.y)), locYMax=Math.max(...angoli.map(a=>a.y));
+  const pad = 46;
+  const scalaX = (w-2*pad)/Math.max(locXMax-locXMin,1), scalaY = (h-2*pad)/Math.max(locYMax-locYMin,1);
+  const scalaBase = Math.max(Math.min(scalaX,scalaY), 0.0005);
+  Vista.camera = {
+    scalaBase,
+    offsetX: w/2 - (locXMin+locXMax)/2*scalaBase,
+    offsetY: h/2 - (locYMin+locYMax)/2*scalaBase
+  };
+}
+
+function graviteOggettiDaAnomalie(){
+  const mappa = new Map(); // "tipo:id" -> STATI.* (peggiore)
+  if(!ultimoRisultato) return mappa;
+  const rango = { [STATI.COLLISIONE]:3, [STATI.MARGINE_INSUFFICIENTE]:2, [STATI.AVVISO]:1 };
+  ultimoRisultato.anomalie.forEach(a=>{
+    if(!rango[a.gravita]) return;
+    a.oggetti.forEach(o=>{
+      const k = o.tipo+':'+o.id;
+      const attuale = mappa.get(k);
+      if(!attuale || rango[a.gravita]>rango[attuale]) mappa.set(k, a.gravita);
+    });
+  });
+  return mappa;
+}
+
+function disegnaPoligonoMm(parent, cornersMm, opz){
+  opz = opz||{};
+  const pts = cornersMm.map(c=>{ const l=mmALocale(c.x,c.y); return l.x.toFixed(3)+','+l.y.toFixed(3); }).join(' ');
+  const sc = effettivaScala();
+  const p = elSvg('polygon', {
+    points: pts, fill: opz.fill||'none', stroke: opz.stroke||'#888',
+    'stroke-width': (opz.strokeWidth!==undefined?opz.strokeWidth:1.6)/sc,
+    'stroke-dasharray': opz.dash ? opz.dash.split(',').map(n=>(+n)/sc).join(',') : '',
+    'data-tipo': opz.tipo||'', 'data-id': opz.id||'', class: opz.classe||''
+  });
+  parent.appendChild(p);
+  return p;
+}
+
+function disegnaBadgeAnomalia(parent, cornersMm, colore){
+  const c0 = cornersMm[0]; const l = mmALocale(c0.x,c0.y); const sc=effettivaScala(); const r=7/sc;
+  const g = elSvg('g');
+  g.appendChild(elSvg('circle',{cx:l.x,cy:l.y,r,fill:colore,stroke:'#1a1206','stroke-width':1/sc}));
+  const t = elSvg('text',{x:l.x,y:l.y+3.2/sc,'text-anchor':'middle','font-size':(10/sc)+'px','font-weight':'800',fill:'#151515'});
+  t.textContent='!'; g.appendChild(t);
+  parent.appendChild(g);
+}
+
+function disegnaGriglia(parent, rTav, passo){
+  const g = elSvg('g', {class:'griglia'});
+  const sc = effettivaScala();
+  for(let x=Math.ceil(rTav.xMin/passo)*passo; x<=rTav.xMax; x+=passo){
+    const a=mmALocale(x,rTav.yMin), b=mmALocale(x,rTav.yMax);
+    g.appendChild(elSvg('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#2c3a52','stroke-width':1/sc}));
+  }
+  for(let y=Math.ceil(rTav.yMin/passo)*passo; y<=rTav.yMax; y+=passo){
+    const a=mmALocale(rTav.xMin,y), b=mmALocale(rTav.xMax,y);
+    g.appendChild(elSvg('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'#2c3a52','stroke-width':1/sc}));
+  }
+  parent.appendChild(g);
+}
+
+function disegnaContenutoSvg(){
+  const svg = document.getElementById('stage');
+  svg.innerHTML='';
+  const placeholder = document.getElementById('vista-placeholder');
+  const m = progetto.macchina;
+  if(!Motore._tavolaCompleta(m)){
+    placeholder.classList.remove('hidden');
+    placeholder.innerHTML = '<div><b>TAVOLA NON CONFIGURATA</b></div><div>Vai su MACCHINA → Tavola per inserire lunghezza, larghezza, quota superiore e posizione, e visualizzare la pianta in scala.</div>';
+    return;
+  }
+  placeholder.classList.add('hidden');
+
+  const camera = elSvg('g', {id:'camera', transform: cameraTransform()});
+  svg.appendChild(camera);
+
+  const rTav = Motore._rettangoloTavola(m);
+  disegnaPoligonoMm(camera, [{x:rTav.xMin,y:rTav.yMin},{x:rTav.xMax,y:rTav.yMin},{x:rTav.xMax,y:rTav.yMax},{x:rTav.xMin,y:rTav.yMax}],
+    {fill:COLORI.steelFill, stroke:COLORI.steel, strokeWidth:2});
+
+  if(progetto.ui.grigliaVisibile && isNum(m.passoGriglia) && m.passoGriglia>0) disegnaGriglia(camera, rTav, m.passoGriglia);
+
+  m.zoneVietate.forEach(z=>{
+    if(!tuttiNum(z.xMin,z.xMax,z.yMin,z.yMax)) return;
+    disegnaPoligonoMm(camera, [{x:z.xMin,y:z.yMin},{x:z.xMax,y:z.yMin},{x:z.xMax,y:z.yMax},{x:z.xMin,y:z.yMax}],
+      {fill:'rgba(239,68,68,.06)', stroke:COLORI.danger, dash:'6,4', strokeWidth:1.4});
+  });
+
+  const gravita = graviteOggettiDaAnomalie();
+  const sel = progetto.ui.selezione;
+
+  progetto.attrezzature.forEach(a=>{
+    const obb = Geo.obbAttrezzatura(a);
+    if(!obb) return;
+    const base = a.tipo==='piano_magnetico' ? {fill:COLORI.plateFill,stroke:COLORI.plate}
+      : a.tipo==='morsa' ? {fill:COLORI.viseFill,stroke:COLORI.vise} : {fill:COLORI.steelFill,stroke:COLORI.steel};
+    const grav = gravita.get('attrezzatura:'+a.id);
+    const stroke = grav===STATI.COLLISIONE ? COLORI.danger : grav===STATI.MARGINE_INSUFFICIENTE ? COLORI.warn : base.stroke;
+    const sw = grav ? 3 : 1.8;
+    const poly = disegnaPoligonoMm(camera, obb.corners, {fill:base.fill, stroke, strokeWidth:sw, dash: grav===STATI.MARGINE_INSUFFICIENTE?'6,4':'', tipo:'attrezzatura', id:a.id, classe:'selezionabile'});
+    if(sel && sel.tipo==='attrezzatura' && sel.id===a.id) poly.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    if(grav) disegnaBadgeAnomalia(camera, obb.corners, grav===STATI.COLLISIONE?COLORI.danger:COLORI.warn);
+    (a.zoneIngombro||[]).forEach(z=>{
+      if(!tuttiNum(a.x,a.y,z.dx,z.dy,z.lunghezzaX,z.larghezzaY)) return;
+      const rot=(a.rotazione||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
+      const px=a.x+(z.dx*cos-z.dy*sin), py=a.y+(z.dx*sin+z.dy*cos);
+      const cx=px+z.lunghezzaX/2, cy=py+z.larghezzaY/2;
+      const cornersZ = Geo.verticiOBB(cx,cy,z.lunghezzaX/2,z.larghezzaY/2, a.rotazione||0);
+      disegnaPoligonoMm(camera, cornersZ, {fill:'none', stroke:base.stroke, dash:'3,3', strokeWidth:1});
+    });
+    (a.puntiFissaggio||[]).forEach(pf=>{
+      if(!tuttiNum(a.x,a.y,pf.dx,pf.dy)) return;
+      const rot=(a.rotazione||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
+      const px=a.x+(pf.dx*cos-pf.dy*sin), py=a.y+(pf.dx*sin+pf.dy*cos);
+      const l = mmALocale(px,py); const sc=effettivaScala();
+      camera.appendChild(elSvg('circle',{cx:l.x,cy:l.y,r:2.5/sc, fill:base.stroke}));
+    });
+  });
+
+  CODICI_ORIGINE.forEach(codice=>{
+    const o = progetto.origini[codice];
+    if(progetto.ui.origHidden) return;
+    if(!tuttiNum(o.x,o.y)) return;
+    const l = mmALocale(o.x,o.y); const sc=effettivaScala(); const d=13/sc;
+    const g = elSvg('g',{'data-tipo':'origine','data-id':codice, opacity:o.attiva?1:0.35, class:'selezionabile'});
+    g.appendChild(elSvg('line',{x1:l.x-d,y1:l.y,x2:l.x+d,y2:l.y, stroke:o.colore,'stroke-width':2/sc}));
+    g.appendChild(elSvg('line',{x1:l.x,y1:l.y-d,x2:l.x,y2:l.y+d, stroke:o.colore,'stroke-width':2/sc}));
+    g.appendChild(elSvg('circle',{cx:l.x,cy:l.y,r:2.6/sc, fill:o.colore}));
+    const t = elSvg('text',{x:l.x+d+3/sc,y:l.y-3/sc, fill:o.colore,'font-size':(10.5/sc)+'px','font-weight':'700'});
+    t.textContent=codice; g.appendChild(t);
+    if(sel && sel.tipo==='origine' && sel.id===codice) g.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    camera.appendChild(g);
+  });
+
+  progetto.pezzi.forEach(p=>{
+    const origine = p.origine ? progetto.origini[p.origine] : null;
+    const obb = origine ? Geo.obbPezzo(p, origine) : null;
+    if(!obb) return;
+    const attivo = p.ruolo==='lavorato';
+    const base = attivo ? {fill:COLORI.activeFill,stroke:COLORI.active} : {fill:COLORI.pieceFill,stroke:COLORI.piece};
+    const grav = gravita.get('pezzo:'+p.id);
+    const stroke = grav===STATI.COLLISIONE ? COLORI.danger : grav===STATI.MARGINE_INSUFFICIENTE ? COLORI.warn : base.stroke;
+    const sw = grav ? 3 : 1.8;
+    const poly = disegnaPoligonoMm(camera, obb.corners, {fill:base.fill, stroke, strokeWidth:sw, dash: grav===STATI.MARGINE_INSUFFICIENTE?'6,4':'', tipo:'pezzo', id:p.id, classe:'selezionabile'});
+    if(sel && sel.tipo==='pezzo' && sel.id===p.id) poly.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    if(grav) disegnaBadgeAnomalia(camera, obb.corners, grav===STATI.COLLISIONE?COLORI.danger:COLORI.warn);
+  });
+}
+
+function ricalcolaEDisegnaPianta(){ calcolaCamera(); disegnaContenutoSvg(); }
+
+function mostraVista(nome){
+  progetto.ui.vistaAttiva = nome;
+  document.getElementById('svg-host').classList.toggle('hidden', nome!=='pianta');
+  document.getElementById('foto-host').classList.toggle('hidden', nome!=='foto');
+  if(nome==='pianta') ricalcolaEDisegnaPianta();
+  if(nome==='foto') renderVistaFoto();
+  renderTabsVista();
+  renderToolbarCanvas();
+}
+
+function renderVistaFoto(){
+  const host = document.getElementById('foto-host');
+  const img = document.getElementById('foto-img');
+  const label = document.getElementById('foto-label');
+  const fr = progetto.fotoRiferimento;
+  if(fr.dataUrl){
+    img.src = fr.dataUrl; img.style.display='block';
+    img.style.opacity = fr.opacita;
+    label.classList.remove('hidden');
+  } else {
+    img.removeAttribute('src'); img.style.display='none';
+    label.classList.add('hidden');
+  }
+}
+
+/* ---- interazione puntatore: selezione, trascinamento, pan, zoom ---- */
+let trascinamento = null, panInCorso = null, pinch = null;
+const puntatoriAttivi = new Map();
+
+function trovaOggetto(tipo,id){
+  if(tipo==='attrezzatura') return progetto.attrezzature.find(a=>a.id===id);
+  if(tipo==='pezzo') return progetto.pezzi.find(p=>p.id===id);
+  if(tipo==='origine') return progetto.origini[id];
+  return null;
+}
+function schermoAMm(clientX, clientY){
+  const svg = document.getElementById('stage');
+  const rect = svg.getBoundingClientRect();
+  const px = clientX-rect.left, py = clientY-rect.top;
+  const sc = effettivaScala();
+  const locX = (px - Vista.camera.offsetX - progetto.ui.panX)/sc;
+  const locY = (py - Vista.camera.offsetY - progetto.ui.panY)/sc;
+  return localeAMm(locX, locY);
+}
+
+function inizializzaInterazioneSvg(){
+  const svg = document.getElementById('stage');
+  svg.addEventListener('pointerdown', onSvgPointerDown);
+  svg.addEventListener('pointermove', onSvgPointerMove);
+  svg.addEventListener('pointerup', onSvgPointerUp);
+  svg.addEventListener('pointercancel', onSvgPointerUp);
+  svg.addEventListener('wheel', onSvgWheel, {passive:false});
+  window.addEventListener('resize', debounce(()=>{ if(progetto.ui.vistaAttiva==='pianta') ricalcolaEDisegnaPianta(); }, 150));
+}
+
+function onSvgPointerDown(e){
+  const svg = document.getElementById('stage');
+  puntatoriAttivi.set(e.pointerId, {x:e.clientX,y:e.clientY});
+  try{ svg.setPointerCapture(e.pointerId); }catch(err){}
+  if(puntatoriAttivi.size===2){
+    const pts=[...puntatoriAttivi.values()];
+    pinch = { distIniziale: Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y)||1, zoomIniziale: progetto.ui.zoom };
+    trascinamento=null; panInCorso=null;
+    return;
+  }
+  const target = e.target.closest('[data-tipo]');
+  if(target && target.dataset.tipo==='attrezzatura'){
+    const obj = trovaOggetto('attrezzatura', target.dataset.id);
+    selezionaOggetto('attrezzatura', target.dataset.id);
+    trascinamento = { tipo:'attrezzatura', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY), xIniziale:obj.x, yIniziale:obj.y };
+  } else if(target && target.dataset.tipo==='pezzo'){
+    const obj = trovaOggetto('pezzo', target.dataset.id);
+    selezionaOggetto('pezzo', target.dataset.id);
+    trascinamento = { tipo:'pezzo', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY),
+      xMinI:obj.xMin, xMaxI:obj.xMax, yMinI:obj.yMin, yMaxI:obj.yMax };
+  } else if(target && target.dataset.tipo==='origine'){
+    selezionaOggetto('origine', target.dataset.id);
+  } else {
+    deselezionaOggetto();
+    panInCorso = { startX:e.clientX, startY:e.clientY, panX0:progetto.ui.panX, panY0:progetto.ui.panY };
+  }
+}
+function onSvgPointerMove(e){
+  if(!puntatoriAttivi.has(e.pointerId) && e.pointerType==='touch') return;
+  puntatoriAttivi.set(e.pointerId, {x:e.clientX,y:e.clientY});
+  if(pinch && puntatoriAttivi.size===2){
+    const pts=[...puntatoriAttivi.values()];
+    const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    progetto.ui.zoom = clampZoom(pinch.zoomIniziale*(dist/pinch.distIniziale));
+    disegnaContenutoSvg();
+    return;
+  }
+  if(trascinamento){
+    const mm = schermoAMm(e.clientX,e.clientY);
+    const dx = mm.x - trascinamento.mmStart.x, dy = mm.y - trascinamento.mmStart.y;
+    const passo = (progetto.ui.snapAttivo && isNum(progetto.macchina.passoGriglia) && progetto.macchina.passoGriglia>0) ? progetto.macchina.passoGriglia : null;
+    if(trascinamento.tipo==='attrezzatura'){
+      const obj = trovaOggetto('attrezzatura', trascinamento.id);
+      let nx = trascinamento.xIniziale+dx, ny = trascinamento.yIniziale+dy;
+      if(passo){ nx = Math.round(nx/passo)*passo; ny = Math.round(ny/passo)*passo; }
+      obj.x = nx; obj.y = ny;
+    } else if(trascinamento.tipo==='pezzo'){
+      const obj = trovaOggetto('pezzo', trascinamento.id);
+      let ndx=dx, ndy=dy;
+      if(passo){ ndx = Math.round((trascinamento.xMinI+dx)/passo)*passo - trascinamento.xMinI; ndy = Math.round((trascinamento.yMinI+dy)/passo)*passo - trascinamento.yMinI; }
+      obj.xMin=trascinamento.xMinI+ndx; obj.xMax=trascinamento.xMaxI+ndx;
+      obj.yMin=trascinamento.yMinI+ndy; obj.yMax=trascinamento.yMaxI+ndy;
+    }
+    disegnaContenutoSvg();
+    aggiornaPannelloProprietaSeSelezionato();
+    return;
+  }
+  if(panInCorso){
+    progetto.ui.panX = panInCorso.panX0 + (e.clientX-panInCorso.startX);
+    progetto.ui.panY = panInCorso.panY0 + (e.clientY-panInCorso.startY);
+    disegnaContenutoSvg();
+  }
+}
+function onSvgPointerUp(e){
+  puntatoriAttivi.delete(e.pointerId);
+  if(puntatoriAttivi.size<2) pinch=null;
+  if(trascinamento){ trascinamento=null; segnaModificato(); }
+  panInCorso=null;
+}
+function onSvgWheel(e){
+  e.preventDefault();
+  progetto.ui.zoom = clampZoom(progetto.ui.zoom*(e.deltaY<0?1.12:0.89));
+  disegnaContenutoSvg();
+}
+
+function esportaRapportoTxt(){
+  const r = ultimoRisultato || Motore.eseguiControlli(progetto);
+  const righe = [];
+  righe.push('RAPPORTO ANOMALIE — PIAZZAMENTI E CONTROLLO COLLISIONI');
+  righe.push('Progetto: ' + (progetto.nomeProgetto || '(senza nome)'));
+  righe.push('Generato il: ' + new Date().toLocaleString('it-IT'));
+  righe.push('Versione app: ' + APP_VERSION);
+  righe.push('Stato globale: ' + r.globale);
+  righe.push('');
+  righe.push('NOTA: strumento di pre-verifica geometrica. Non sostituisce simulazione CAM/CNC, Single Block, Dry Run, prova ad avanzamento ridotto, collaudo macchina.');
+  righe.push('FOTO EVENTUALMENTE ALLEGATE IN APP: solo riferimento visivo, NON in scala.');
+  righe.push('');
+  r.note.forEach(n=>righe.push('NOTA: '+n));
+  righe.push('');
+  if(r.anomalie.length===0){
+    righe.push('Nessuna anomalia da segnalare nelle categorie effettivamente valutate.');
+  }
+  r.anomalie.forEach((a,i)=>{
+    righe.push('--- Anomalia '+(i+1)+' — '+a.gravita+' ---');
+    righe.push('Titolo: ' + a.titolo);
+    righe.push('Tipo: ' + a.tipo);
+    if(a.origineAttiva) righe.push('Origine attiva: ' + a.origineAttiva);
+    if(a.oggetti.length) righe.push('Oggetti coinvolti: ' + a.oggetti.map(o=>o.nome+' ('+o.tipo+')').join(', '));
+    if(a.asse) righe.push('Asse interessato: ' + a.asse);
+    if(a.distanzaOPenetrazione!==null) righe.push('Distanza/penetrazione: ' + fmtMm(a.distanzaOPenetrazione));
+    if(a.margineRichiesto!==null) righe.push('Margine richiesto: ' + fmtMm(a.margineRichiesto));
+    righe.push('Descrizione: ' + a.descrizione);
+    righe.push('Correzione possibile: ' + a.correzionePossibile);
+    righe.push('');
+  });
+  scaricaTesto((progetto.nomeProgetto||'rapporto')+'_rapporto.txt', righe.join('\n'), 'text/plain');
+  mostraToast('Rapporto esportato.', 'ok');
+}
+/* =====================================================================
+   8. HELPER FORM GENERICI
+   ===================================================================== */
+function campoNumero(container, obj, path, label, opz){
+  opz = opz||{};
+  const div=document.createElement('div'); div.className='campo';
+  const lab=document.createElement('label'); lab.textContent=label;
+  const val=getPath(obj,path);
+  if(val===null||val===undefined){ const pill=document.createElement('span'); pill.className='pillola-null'; pill.textContent='NON CONFIGURATO'; lab.appendChild(pill); }
+  div.appendChild(lab);
+  const input=document.createElement('input'); input.type='text'; input.className='mono'; input.inputMode='decimal';
+  input.value=(val===null||val===undefined)?'':formattaNumero(val,opz.decimali);
+  input.placeholder=opz.placeholder||'—';
+  input.addEventListener('change',()=>{
+    const n=parseNumeroIt(input.value);
+    if(Number.isNaN(n)){ mostraToast('Valore non valido in "'+label+'": usa un numero (virgola o punto ammessi).','err'); input.value=(val===null||val===undefined)?'':formattaNumero(val,opz.decimali); return; }
+    setPath(obj,path,n); segnaModificato(); if(opz.onChange) opz.onChange(n);
+    if(opz.modale) riDisegnaModal(); else renderPannelloProprieta();
+  });
+  div.appendChild(input);
+  if(opz.nota){ const n=document.createElement('div'); n.className='nota-campo'; n.textContent=opz.nota; div.appendChild(n); }
+  container.appendChild(div);
+}
+function campoTesto(container, obj, path, label, opz){
+  opz=opz||{};
+  const div=document.createElement('div'); div.className='campo';
+  const lab=document.createElement('label'); lab.textContent=label; div.appendChild(lab);
+  const val=getPath(obj,path);
+  let input;
+  if(opz.area){ input=document.createElement('textarea'); } else { input=document.createElement('input'); input.type='text'; }
+  input.value=val||''; input.placeholder=opz.placeholder||'';
+  input.addEventListener('change',()=>{ setPath(obj,path,input.value.trim()===''?null:input.value); segnaModificato(); if(opz.onChange) opz.onChange(input.value); });
+  div.appendChild(input);
+  if(opz.nota){ const n=document.createElement('div'); n.className='nota-campo'; n.textContent=opz.nota; div.appendChild(n); }
+  container.appendChild(div);
+}
+function campoSelect(container, obj, path, label, opzioni, opz){
+  opz=opz||{};
+  const div=document.createElement('div'); div.className='campo';
+  const lab=document.createElement('label'); lab.textContent=label; div.appendChild(lab);
+  const sel=document.createElement('select');
+  opzioni.forEach(o=>{ const el=document.createElement('option'); el.value=o.value; el.textContent=o.label; sel.appendChild(el); });
+  sel.value = getPath(obj,path) || '';
+  sel.addEventListener('change',()=>{ setPath(obj,path, sel.value===''?null:sel.value); segnaModificato(); if(opz.onChange) opz.onChange(sel.value); if(opz.modale) riDisegnaModal(); else renderPannelloProprieta(); });
+  div.appendChild(sel);
+  container.appendChild(div);
+}
+function campoCheckbox(container, obj, path, label){
+  const div=document.createElement('div'); div.className='campo-check';
+  const input=document.createElement('input'); input.type='checkbox'; input.checked=!!getPath(obj,path);
+  const id='chk_'+uid('c'); input.id=id;
+  input.addEventListener('change',()=>{ setPath(obj,path,input.checked); segnaModificato(); });
+  const lab=document.createElement('label'); lab.htmlFor=id; lab.style.textTransform='none'; lab.style.marginBottom='0'; lab.textContent=label;
+  div.appendChild(input); div.appendChild(lab); container.appendChild(div);
+}
+function campoColore(container, obj, path, label){
+  const div=document.createElement('div'); div.className='campo';
+  const lab=document.createElement('label'); lab.textContent=label; div.appendChild(lab);
+  const input=document.createElement('input'); input.type='color'; input.value=getPath(obj,path)||'#64748b';
+  input.addEventListener('change',()=>{ setPath(obj,path,input.value); segnaModificato(); disegnaContenutoSvg(); });
+  div.appendChild(input); container.appendChild(div);
+}
+function renderElenco(container, items, opz){
+  const idKey=opz.idKey||'id';
+  if(items.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent=opz.testoVuoto||'Nessun elemento.'; container.appendChild(v); }
+  items.forEach(item=>{
+    const riga=document.createElement('div'); riga.className='elenco-riga'+(opz.selezionatoId===item[idKey]?' selezionata':'');
+    if(opz.coloreItem){ const tag=document.createElement('div'); tag.className='tag-colore'; tag.style.background=opz.coloreItem(item); riga.appendChild(tag); }
+    const testo=document.createElement('div'); testo.className='elenco-testo';
+    const tit=document.createElement('div'); tit.className='elenco-titolo'; tit.textContent=opz.titoloItem(item); testo.appendChild(tit);
+    if(opz.subItem){ const sub=document.createElement('div'); sub.className='elenco-sub'; sub.textContent=opz.subItem(item); testo.appendChild(sub); }
+    riga.appendChild(testo);
+    riga.onclick=()=>opz.onSeleziona(item);
+    if(opz.onRimuovi){ const b=document.createElement('button'); b.textContent='✕'; b.title='Rimuovi'; b.onclick=(ev)=>{ ev.stopPropagation(); opz.onRimuovi(item); }; riga.appendChild(b); }
+    container.appendChild(riga);
+  });
+}
+
+/* =====================================================================
+   9. MENU SUPERIORE
+   ===================================================================== */
+let _menuApertoEl=null;
+function chiudiMenuAperto(){
+  if(_menuApertoEl){ const d=_menuApertoEl.querySelector('.menu-drop'); if(d) d.remove(); const b=_menuApertoEl.querySelector('.menu-btn'); if(b) b.classList.remove('aperto'); _menuApertoEl=null; }
+}
+document.addEventListener('click', chiudiMenuAperto);
+function toggleMenuDrop(item, azioni, btn){
+  const giaAperto = _menuApertoEl===item;
+  chiudiMenuAperto();
+  if(giaAperto) return;
+  const drop=document.createElement('div'); drop.className='menu-drop';
+  azioni.forEach(a=>{
+    if(a.sep){ drop.appendChild(document.createElement('hr')); return; }
+    const b=document.createElement('button'); b.textContent=a.label; b.onclick=(e)=>{ e.stopPropagation(); chiudiMenuAperto(); a.fn(); };
+    drop.appendChild(b);
+  });
+  item.appendChild(drop); btn.classList.add('aperto'); _menuApertoEl=item;
+}
+function renderMenubar(){
+  const bar=document.getElementById('menubar'); bar.innerHTML='';
+  document.getElementById('app-version-tag').textContent = APP_VERSION;
+  const menus=[
+    {nome:'File', azioni:[
+      {label:'Nuovo progetto', fn:nuovoProgetto},
+      {label:'Apri progetto JSON…', fn:()=>document.getElementById('file-open-json').click()},
+      {label:'Salva', fn:salvaProgetto},
+      {label:'Salva con nome…', fn:salvaProgettoConNome},
+      {label:'Importa fotografia…', fn:()=>document.getElementById('file-import-photo').click()},
+      {label:'Esporta rapporto', fn:esportaRapportoTxt},
+      {sep:true},
+      {label:'Chiudi progetto', fn:chiudiProgettoMenu}
+    ]},
+    {nome:'Macchina', azioni:[{label:'Configura macchina, tavola e corse', fn:()=>selezionaOggetto('macchina','unica')}]},
+    {nome:'Attrezzature', azioni:[{label:'Gestisci attrezzature', fn:apriElencoAttrezzature}]},
+    {nome:'Origini', azioni:[
+      ...CODICI_ORIGINE.map(c=>({label:'Gestisci '+c, fn:()=>selezionaOggetto('origine',c)})),
+      {sep:true},
+      {label:(progetto.ui.origHidden?'Mostra origini':'Nascondi origini'), fn:()=>{ progetto.ui.origHidden=!progetto.ui.origHidden; disegnaContenutoSvg(); }}
+    ]},
+    {nome:'Pezzi', azioni:[{label:'Gestisci pezzi', fn:apriElencoPezzi}]},
+    {nome:'Utensile', azioni:[{label:'Dati utensile e portautensile', fn:()=>selezionaOggetto('utensile','unico')}]},
+    {nome:'Vista', azioni:[
+      {label:'Vista pianta (XY)', fn:()=>mostraVista('pianta')},
+      {label:'Vista foto di riferimento', fn:()=>mostraVista('foto')},
+      {sep:true},
+      {label:'Adatta alla finestra', fn:()=>{ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; ricalcolaEDisegnaPianta(); renderToolbarCanvas(); }},
+      {label:(progetto.ui.grigliaVisibile?'Nascondi griglia':'Mostra griglia'), fn:()=>{ progetto.ui.grigliaVisibile=!progetto.ui.grigliaVisibile; disegnaContenutoSvg(); renderToolbarCanvas(); }},
+      {label:(progetto.ui.snapAttivo?'Disattiva snap':'Attiva snap'), fn:()=>{ progetto.ui.snapAttivo=!progetto.ui.snapAttivo; renderToolbarCanvas(); }}
+    ]},
+    {nome:'Aiuto', azioni:[{label:'Informazioni e limiti del progetto', fn:apriAiuto}, {label:'Diagnostica', fn:apriDiagnostica}]}
+  ];
+  menus.forEach(m=>{
+    const item=document.createElement('div'); item.className='menu-item';
+    const btn=document.createElement('button'); btn.className='menu-btn'; btn.textContent=m.nome;
+    btn.onclick=(e)=>{ e.stopPropagation(); toggleMenuDrop(item,m.azioni,btn); };
+    item.appendChild(btn); bar.appendChild(item);
+  });
+}
+
+/* =====================================================================
+   10. ALBERO OGGETTI (pannello sinistro) E SELEZIONE
+   ===================================================================== */
+function selezionaOggetto(tipo,id){
+  if(tipo==='utensile' && !progetto.utensile) progetto.utensile = creaUtensile();
+  progetto.ui.selezione={tipo,id};
+  renderAlbero(); renderPannelloProprieta();
+  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+  if(window.innerWidth<=860){
+    document.getElementById('props-panel').classList.add('aperto');
+    document.getElementById('tree-panel').classList.remove('aperto');
+    document.getElementById('drawer-scrim').classList.add('attivo');
+  }
+}
+function deselezionaOggetto(){
+  progetto.ui.selezione=null; renderAlbero(); renderPannelloProprieta();
+  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+}
+function aggiornaPannelloProprietaSeSelezionato(){ if(progetto.ui.selezione) renderPannelloProprieta(); }
+
+function nodoAlbero(container, selezionato, colore, testo, onClick){
+  const n=document.createElement('div'); n.className='albero-nodo'+(selezionato?' selezionato':'');
+  const p=document.createElement('span'); p.className='pallino'; p.style.background=colore; n.appendChild(p);
+  const s=document.createElement('span'); s.textContent=testo; n.appendChild(s);
+  n.onclick=onClick; container.appendChild(n);
+}
+function renderAlbero(){
+  const panel=document.getElementById('tree-panel'); panel.innerHTML='';
+  const sel=progetto.ui.selezione;
+
+  let t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Macchina'; panel.appendChild(t);
+  nodoAlbero(panel, sel&&sel.tipo==='macchina', 'var(--steel)', progetto.macchina.nome||'(non configurata)', ()=>selezionaOggetto('macchina','unica'));
+
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Attrezzature'; panel.appendChild(t);
+  if(progetto.attrezzature.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Nessuna attrezzatura.'; panel.appendChild(v); }
+  progetto.attrezzature.forEach(a=>{
+    const colore=a.tipo==='piano_magnetico'?'var(--plate)':a.tipo==='morsa'?'var(--vise)':'var(--steel)';
+    nodoAlbero(panel, sel&&sel.tipo==='attrezzatura'&&sel.id===a.id, colore, a.nome||'(senza nome)', ()=>selezionaOggetto('attrezzatura',a.id));
+  });
+  let bAgg=document.createElement('button'); bAgg.className='albero-aggiungi'; bAgg.textContent='Gestisci attrezzature'; bAgg.onclick=apriElencoAttrezzature; panel.appendChild(bAgg);
+
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Origini G54–G59'; panel.appendChild(t);
+  CODICI_ORIGINE.forEach(c=>{
+    const o=progetto.origini[c];
+    nodoAlbero(panel, sel&&sel.tipo==='origine'&&sel.id===c, o.colore, c+(o.descrizione?' — '+o.descrizione:'')+(!o.attiva?' (non attiva)':''), ()=>selezionaOggetto('origine',c));
+  });
+
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Pezzi'; panel.appendChild(t);
+  if(progetto.pezzi.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Nessun pezzo.'; panel.appendChild(v); }
+  progetto.pezzi.forEach(p=>{
+    const colore=p.ruolo==='lavorato'?'var(--active)':'var(--piece)';
+    nodoAlbero(panel, sel&&sel.tipo==='pezzo'&&sel.id===p.id, colore, p.nome||'(senza nome)', ()=>selezionaOggetto('pezzo',p.id));
+  });
+  bAgg=document.createElement('button'); bAgg.className='albero-aggiungi'; bAgg.textContent='Gestisci pezzi'; bAgg.onclick=apriElencoPezzi; panel.appendChild(bAgg);
+
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Utensile'; panel.appendChild(t);
+  nodoAlbero(panel, sel&&sel.tipo==='utensile', 'var(--missing)', (progetto.utensile&&progetto.utensile.nome)?progetto.utensile.nome:'(dati non inseriti)', ()=>selezionaOggetto('utensile','unico'));
+}
+
+/* =====================================================================
+   11. PANNELLO PROPRIETÀ (pannello destro) — editor per selezione corrente
+   ===================================================================== */
+function renderPannelloProprieta(){
+  const panel=document.getElementById('props-panel'); panel.innerHTML='';
+  const t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Proprietà'; panel.appendChild(t);
+  const sel=progetto.ui.selezione;
+  if(!sel){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Seleziona un elemento dall\'albero o dalla vista per modificarne le proprietà.'; panel.appendChild(v); return; }
+  if(sel.tipo==='macchina') return renderProprietaMacchina(panel);
+  if(sel.tipo==='utensile') return renderProprietaUtensile(panel);
+  if(sel.tipo==='attrezzatura'){ const a=progetto.attrezzature.find(x=>x.id===sel.id); if(!a){ deselezionaOggetto(); return; } return renderProprietaAttrezzatura(panel,a); }
+  if(sel.tipo==='pezzo'){ const p=progetto.pezzi.find(x=>x.id===sel.id); if(!p){ deselezionaOggetto(); return; } return renderProprietaPezzo(panel,p); }
+  if(sel.tipo==='origine') return renderProprietaOrigine(panel, sel.id);
+}
+
+function renderProprietaMacchina(panel){
+  campoTesto(panel, progetto.macchina, 'nome', 'Nome macchina', {placeholder:'es. Mikron Mill P 900'});
+  const fOr=document.createElement('fieldset'); fOr.className='gruppo'; fOr.innerHTML='<legend>Orientamento assi a schermo</legend>'; panel.appendChild(fOr);
+  campoCheckbox(fOr, progetto.macchina.orientamento, 'invertiX', 'Inverti asse X');
+  campoCheckbox(fOr, progetto.macchina.orientamento, 'invertiY', 'Inverti asse Y');
+  campoNumero(fOr, progetto.macchina, 'passoGriglia', 'Passo griglia (mm)', {nota:'Usato per la griglia grafica e per lo snap del trascinamento.'});
+
+  const fCorse=document.createElement('fieldset'); fCorse.className='gruppo'; fCorse.innerHTML='<legend>Corse macchina (MCS)</legend>'; panel.appendChild(fCorse);
+  let r=document.createElement('div'); r.className='riga2'; fCorse.appendChild(r);
+  campoNumero(r, progetto.macchina.corse, 'xMin', 'X minimo'); campoNumero(r, progetto.macchina.corse, 'xMax', 'X massimo');
+  r=document.createElement('div'); r.className='riga2'; fCorse.appendChild(r);
+  campoNumero(r, progetto.macchina.corse, 'yMin', 'Y minimo'); campoNumero(r, progetto.macchina.corse, 'yMax', 'Y massimo');
+  r=document.createElement('div'); r.className='riga2'; fCorse.appendChild(r);
+  campoNumero(r, progetto.macchina.corse, 'zMin', 'Z minimo'); campoNumero(r, progetto.macchina.corse, 'zMax', 'Z massimo');
+
+  const fTav=document.createElement('fieldset'); fTav.className='gruppo'; fTav.innerHTML='<legend>Tavola</legend>'; panel.appendChild(fTav);
+  r=document.createElement('div'); r.className='riga3'; fTav.appendChild(r);
+  campoNumero(r, progetto.macchina.tavola, 'lunghezza', 'Lunghezza X'); campoNumero(r, progetto.macchina.tavola, 'larghezza', 'Larghezza Y'); campoNumero(r, progetto.macchina.tavola, 'quotaSuperiore', 'Quota superiore Z');
+  r=document.createElement('div'); r.className='riga3'; fTav.appendChild(r);
+  campoNumero(r, progetto.macchina.tavola.posizione, 'x', 'Posizione X (spigolo min)'); campoNumero(r, progetto.macchina.tavola.posizione, 'y', 'Posizione Y (spigolo min)'); campoNumero(r, progetto.macchina.tavola.posizione, 'z', 'Posizione Z');
+
+  campoNumero(panel, progetto.macchina, 'margineSicurezzaGenerale', 'Margine di sicurezza generale (mm)', {nota:'Valore informativo di riferimento: non viene applicato automaticamente ai controlli — riportalo sui singoli oggetti (attrezzature/pezzi) se deve essere usato nei calcoli.'});
+  campoNumero(panel, progetto.macchina, 'quotaMinimaNasoMandrino', 'Quota minima naso mandrino (mm)', {nota:'Dato informativo, non ancora usato nei controlli automatici di questa versione.'});
+
+  const fZone=document.createElement('fieldset'); fZone.className='gruppo'; fZone.innerHTML='<legend>Zone vietate</legend>'; panel.appendChild(fZone);
+  progetto.macchina.zoneVietate.forEach((z,i)=>{
+    const box=document.createElement('div'); box.style.border='1px solid var(--bd)'; box.style.borderRadius='3px'; box.style.padding='8px'; box.style.marginBottom='8px';
+    campoTesto(box, z, 'nome', 'Nome zona '+(i+1));
+    let rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+    campoNumero(rr, z, 'xMin', 'X min'); campoNumero(rr, z, 'xMax', 'X max');
+    rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+    campoNumero(rr, z, 'yMin', 'Y min'); campoNumero(rr, z, 'yMax', 'Y max');
+    rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+    campoNumero(rr, z, 'zMin', 'Z min (opz.)'); campoNumero(rr, z, 'zMax', 'Z max (opz.)');
+    const bRim=document.createElement('button'); bRim.className='btn pericolo piccolo'; bRim.textContent='Rimuovi zona'; bRim.onclick=()=>{ progetto.macchina.zoneVietate.splice(i,1); segnaModificato(); renderPannelloProprieta(); };
+    box.appendChild(bRim);
+    fZone.appendChild(box);
+  });
+  const bAggZona=document.createElement('button'); bAggZona.className='btn'; bAggZona.textContent='+ Aggiungi zona vietata';
+  bAggZona.onclick=()=>{ progetto.macchina.zoneVietate.push(creaZonaVietata()); segnaModificato(); renderPannelloProprieta(); };
+  fZone.appendChild(bAggZona);
+}
+
+function renderProprietaUtensile(panel){
+  const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginBottom='10px';
+  nota.textContent='Questi dati sono salvati nel progetto ma NON sono ancora utilizzati nei controlli automatici di questa versione (il controllo dinamico utensile/percorso è pianificato per una versione successiva). Vedi AIUTO → Informazioni e limiti.';
+  panel.appendChild(nota);
+  const u=progetto.utensile;
+  campoTesto(panel, u, 'nome', 'Nome utensile');
+  let r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,u,'diametroFresa','Diametro fresa'); campoNumero(r,u,'lunghezzaTagliente','Lunghezza tagliente');
+  r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,u,'diametroCodolo','Diametro codolo'); campoNumero(r,u,'lunghezzaCodolo','Lunghezza codolo');
+  r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,u,'diametroPortautensile','Diametro portautensile'); campoNumero(r,u,'lunghezzaPortautensile','Lunghezza portautensile');
+  campoNumero(panel,u,'sporgenzaTotale','Sporgenza totale dal portautensile');
+  r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,u,'margineRadiale','Margine radiale'); campoNumero(r,u,'margineAssiale','Margine assiale');
+}
+
+function renderProprietaAttrezzatura(panel, a){
+  campoTesto(panel, a, 'nome', 'Nome');
+  campoSelect(panel, a, 'tipo', 'Tipo', [{value:'piano_magnetico',label:'Piano magnetico'},{value:'morsa',label:'Morsa'},{value:'altro',label:'Altro'}]);
+  let r=document.createElement('div'); r.className='riga3'; panel.appendChild(r);
+  campoNumero(r,a,'lunghezzaX','Lungh. X'); campoNumero(r,a,'larghezzaY','Largh. Y'); campoNumero(r,a,'altezzaZ','Alt. Z');
+  r=document.createElement('div'); r.className='riga3'; panel.appendChild(r);
+  campoNumero(r,a,'x','Pos. X (spigolo min)'); campoNumero(r,a,'y','Pos. Y (spigolo min)'); campoNumero(r,a,'zBase','Pos. Z base');
+  r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,a,'rotazione','Rotazione (°)'); campoNumero(r,a,'quotaPianoAppoggio','Quota piano appoggio pezzi');
+  campoNumero(panel,a,'margineSicurezza','Margine di sicurezza (mm)');
+  campoCheckbox(panel,a,'fisso','Attrezzatura fissa (non riposizionabile)');
+
+  if(a.tipo==='morsa'){
+    const f=document.createElement('fieldset'); f.className='gruppo'; f.innerHTML='<legend>Dati morsa (opzionali)</legend>'; panel.appendChild(f);
+    let rr=document.createElement('div'); rr.className='riga2'; f.appendChild(rr);
+    campoNumero(rr,a.extra,'apertura','Apertura'); campoNumero(rr,a.extra,'larghezzaGanasce','Largh. ganasce');
+    rr=document.createElement('div'); rr.className='riga2'; f.appendChild(rr);
+    campoNumero(rr,a.extra,'altezzaGanasce','Alt. ganasce'); campoNumero(rr,a.extra,'zonaManovraVite','Ingombro manovra vite');
+    rr=document.createElement('div'); rr.className='riga2'; f.appendChild(rr);
+    campoNumero(rr,a.extra,'posGanasciaFissa','Pos. ganascia fissa (X locale)'); campoNumero(rr,a.extra,'posGanasciaMobile','Pos. ganascia mobile (X locale)');
+  } else if(a.tipo==='piano_magnetico'){
+    const f=document.createElement('fieldset'); f.className='gruppo'; f.innerHTML='<legend>Dati piano magnetico (opzionali)</legend>'; panel.appendChild(f);
+    let rr=document.createElement('div'); rr.className='riga2'; f.appendChild(rr);
+    campoNumero(rr,a.extra,'zonaMagneticaUtile','Zona magnetica utile'); campoNumero(rr,a.extra,'bordiNonUtilizzabili','Bordo non utilizzabile');
+    campoTesto(f,a.extra,'connettoriCaviNote','Connettori/cavi/battute (note)',{area:true});
+  }
+
+  const fZI=document.createElement('fieldset'); fZI.className='gruppo'; fZI.innerHTML='<legend>Zone di ingombro aggiuntive</legend>'; panel.appendChild(fZI);
+  a.zoneIngombro.forEach((z,i)=>{
+    const box=document.createElement('div'); box.style.border='1px solid var(--bd)'; box.style.borderRadius='3px'; box.style.padding='8px'; box.style.marginBottom='8px';
+    campoTesto(box,z,'nome','Nome zona ingombro '+(i+1));
+    let rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+    campoNumero(rr,z,'dx','Offset X da spigolo attrezzatura'); campoNumero(rr,z,'dy','Offset Y da spigolo attrezzatura');
+    rr=document.createElement('div'); rr.className='riga3'; box.appendChild(rr);
+    campoNumero(rr,z,'lunghezzaX','Lungh. X'); campoNumero(rr,z,'larghezzaY','Largh. Y'); campoNumero(rr,z,'altezzaZ','Alt. Z');
+    campoNumero(box,z,'zBase','Quota Z base (vuoto = usa quella dell\'attrezzatura)');
+    const bRim=document.createElement('button'); bRim.className='btn pericolo piccolo'; bRim.textContent='Rimuovi'; bRim.onclick=()=>{ a.zoneIngombro.splice(i,1); segnaModificato(); renderPannelloProprieta(); };
+    box.appendChild(bRim); fZI.appendChild(box);
+  });
+  const bAggZI=document.createElement('button'); bAggZI.className='btn'; bAggZI.textContent='+ Aggiungi zona ingombro';
+  bAggZI.onclick=()=>{ a.zoneIngombro.push({id:uid('zi'),nome:null,dx:null,dy:null,lunghezzaX:null,larghezzaY:null,altezzaZ:null,zBase:null}); segnaModificato(); renderPannelloProprieta(); };
+  fZI.appendChild(bAggZI);
+
+  const fPF=document.createElement('fieldset'); fPF.className='gruppo'; fPF.innerHTML='<legend>Punti di fissaggio consentiti</legend>'; panel.appendChild(fPF);
+  a.puntiFissaggio.forEach((pf,i)=>{
+    const rr=document.createElement('div'); rr.className='riga2'; fPF.appendChild(rr);
+    campoNumero(rr,pf,'dx','Punto '+(i+1)+' — offset X'); campoNumero(rr,pf,'dy','offset Y');
+  });
+  const bAggPF=document.createElement('button'); bAggPF.className='btn piccolo'; bAggPF.textContent='+ Punto fissaggio';
+  bAggPF.onclick=()=>{ a.puntiFissaggio.push({id:uid('pf'),dx:null,dy:null}); segnaModificato(); renderPannelloProprieta(); };
+  fPF.appendChild(bAggPF);
+
+  campoTesto(panel, a, 'note', 'Note', {area:true});
+  const bElim=document.createElement('button'); bElim.className='btn pericolo'; bElim.style.marginTop='10px'; bElim.textContent='Elimina attrezzatura';
+  bElim.onclick=()=>apriConferma('Eliminare definitivamente l\'attrezzatura "'+(a.nome||a.id)+'"?', ()=>{
+    progetto.attrezzature=progetto.attrezzature.filter(x=>x.id!==a.id); deselezionaOggetto(); segnaModificato();
+  }, 'Elimina');
+  panel.appendChild(bElim);
+}
+
+function renderCalcolatorePreset(container, p){
+  const fs=document.createElement('fieldset'); fs.className='gruppo'; fs.innerHTML='<legend>Calcolo rapido da dimensioni (opzionale)</legend>';
+  const div=document.createElement('div'); div.className='campo'; div.innerHTML='<label>Preset posizione origine sul pezzo</label>'; fs.appendChild(div);
+  const sel=document.createElement('select');
+  [['centro_superiore','Centro, faccia superiore'],['centro_inferiore','Centro, faccia inferiore'],
+   ['spigolo_superiore','Spigolo min, faccia superiore'],['spigolo_inferiore','Spigolo min, faccia inferiore']]
+   .forEach(([v,l])=>{ const o=document.createElement('option'); o.value=v; o.textContent=l; sel.appendChild(o); });
+  div.appendChild(sel);
+  const r=document.createElement('div'); r.className='riga3'; fs.appendChild(r);
+  function campoTemp(ph){ const d=document.createElement('div'); d.className='campo'; const i=document.createElement('input'); i.type='text'; i.className='mono'; i.placeholder=ph; d.appendChild(i); r.appendChild(d); return i; }
+  const inL=campoTemp('Lungh. X'), inW=campoTemp('Largh. Y'), inH=campoTemp('Alt. Z');
+  const bApplica=document.createElement('button'); bApplica.className='btn'; bApplica.textContent='Calcola e applica a X/Y/Z min-max';
+  bApplica.onclick=()=>{
+    const L=parseNumeroIt(inL.value), W=parseNumeroIt(inW.value), H=parseNumeroIt(inH.value);
+    if(!tuttiNum(L,W,H)){ mostraToast('Inserisci lunghezza, larghezza e altezza (numeri) per calcolare.','err'); return; }
+    const preset=sel.value, centro=preset.startsWith('centro'), sup=preset.endsWith('superiore');
+    p.xMin = centro? -L/2:0; p.xMax = centro? L/2:L;
+    p.yMin = centro? -W/2:0; p.yMax = centro? W/2:W;
+    p.zMin = sup? -H:0; p.zMax = sup? 0:H;
+    segnaModificato(); renderPannelloProprieta(); mostraToast('Quote calcolate. Restano modificabili manualmente qui sotto.','ok');
+  };
+  fs.appendChild(bApplica);
+  const nota=document.createElement('div'); nota.className='nota-campo'; nota.textContent='Le quote X/Y/Z min-max qui sotto sono il dato autorevole usato dai controlli e restano sempre modificabili direttamente, anche per origini esterne al pezzo.';
+  fs.appendChild(nota);
+  container.appendChild(fs);
+}
+
+function renderProprietaPezzo(panel, p){
+  campoTesto(panel, p, 'nome', 'Nome / codice');
+  campoSelect(panel, p, 'origine', 'Origine associata', [{value:'',label:'— nessuna —'}, ...CODICI_ORIGINE.map(c=>({value:c,label:c}))]);
+  const opzSupporto=[{value:'',label:'— nessuno —'},{value:'tavola',label:'Tavola (diretto)'}, ...progetto.attrezzature.map(a=>({value:a.id,label:a.nome||a.id}))];
+  campoSelect(panel, p, 'supporto', 'Supporto', opzSupporto);
+  campoSelect(panel, p, 'ruolo', 'Ruolo', [{value:'ostacolo',label:'Ostacolo (non lavorato in questa operazione)'},{value:'lavorato',label:'Pezzo lavorato (attivo)'}]);
+  campoNumero(panel, p, 'rotazione', 'Rotazione (°) attorno al centro, nel sistema origine');
+
+  renderCalcolatorePreset(panel, p);
+
+  const fQ=document.createElement('fieldset'); fQ.className='gruppo'; fQ.innerHTML='<legend>Quote rispetto all\'origine (dato autorevole)</legend>'; panel.appendChild(fQ);
+  let r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,p,'xMin','X minimo'); campoNumero(r,p,'xMax','X massimo');
+  r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,p,'yMin','Y minimo'); campoNumero(r,p,'yMax','Y massimo');
+  r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,p,'zMin','Z minimo'); campoNumero(r,p,'zMax','Z massimo');
+
+  campoNumero(panel, p, 'sovrametallo', 'Sovrametallo (mm)');
+  campoNumero(panel, p, 'margineSicurezza', 'Margine di sicurezza (mm)');
+  campoTesto(panel, p, 'note', 'Note', {area:true});
+
+  const bElim=document.createElement('button'); bElim.className='btn pericolo'; bElim.style.marginTop='10px'; bElim.textContent='Elimina pezzo';
+  bElim.onclick=()=>apriConferma('Eliminare definitivamente il pezzo "'+(p.nome||p.id)+'"?', ()=>{
+    progetto.pezzi=progetto.pezzi.filter(x=>x.id!==p.id); deselezionaOggetto(); segnaModificato();
+  }, 'Elimina');
+  panel.appendChild(bElim);
+}
+
+function renderProprietaOrigine(panel, codice){
+  const o=progetto.origini[codice];
+  const tit=document.createElement('div'); tit.style.fontFamily='var(--font-display)'; tit.style.fontSize='16px'; tit.style.marginBottom='8px'; tit.style.color=o.colore; tit.textContent=codice;
+  panel.appendChild(tit);
+  campoTesto(panel, o, 'descrizione', 'Descrizione');
+  let r=document.createElement('div'); r.className='riga3'; panel.appendChild(r);
+  campoNumero(r,o,'x','X macchina'); campoNumero(r,o,'y','Y macchina'); campoNumero(r,o,'z','Z macchina');
+  campoColore(panel, o, 'colore', 'Colore identificativo');
+  campoCheckbox(panel, o, 'attiva', 'Origine attiva');
+
+  const fP=document.createElement('fieldset'); fP.className='gruppo'; fP.innerHTML='<legend>Pezzi associati</legend>'; panel.appendChild(fP);
+  const assoc = progetto.pezzi.filter(p=>p.origine===codice);
+  if(assoc.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Nessun pezzo associato a questa origine.'; fP.appendChild(v); }
+  assoc.forEach(p=>{
+    const n=document.createElement('div'); n.className='albero-nodo'; n.textContent=p.nome||'(senza nome)';
+    n.onclick=()=>selezionaOggetto('pezzo',p.id); fP.appendChild(n);
+  });
+}
+
+/* =====================================================================
+   12. MODALI ELENCO (aggiungi/rimuovi/seleziona) — ATTREZZATURE, PEZZI
+   ===================================================================== */
+function apriElencoAttrezzature(){
+  apriModal('Attrezzature', (body,foot)=>{
+    renderElenco(body, progetto.attrezzature, {
+      titoloItem:a=>a.nome||'(senza nome)',
+      subItem:a=>(a.tipo==='piano_magnetico'?'Piano magnetico':a.tipo==='morsa'?'Morsa':'Altro')+' · '+(tuttiNum(a.lunghezzaX,a.larghezzaY)?(formattaNumero(a.lunghezzaX,1)+'×'+formattaNumero(a.larghezzaY,1)+' mm'):'dimensioni non configurate'),
+      coloreItem:a=>a.tipo==='piano_magnetico'?'var(--plate)':a.tipo==='morsa'?'var(--vise)':'var(--steel)',
+      onSeleziona:a=>{ chiudiModal(); selezionaOggetto('attrezzatura',a.id); },
+      onRimuovi:a=>apriConferma('Rimuovere l\'attrezzatura "'+(a.nome||a.id)+'"? I pezzi che la indicano come supporto resteranno nel progetto, ma risulteranno con supporto non trovato finché non li riassegni.', ()=>{
+        progetto.attrezzature=progetto.attrezzature.filter(x=>x.id!==a.id);
+        if(progetto.ui.selezione&&progetto.ui.selezione.tipo==='attrezzatura'&&progetto.ui.selezione.id===a.id) progetto.ui.selezione=null;
+        segnaModificato(); riDisegnaModal();
+      })
+    });
+    const rb=document.createElement('div'); rb.className='riga-btn';
+    [['piano_magnetico','+ Piano magnetico'],['morsa','+ Morsa'],['altro','+ Altra attrezzatura']].forEach(([tp,lb])=>{
+      const b=document.createElement('button'); b.className='btn'; b.textContent=lb;
+      b.onclick=()=>{ const a=creaAttrezzatura(tp); progetto.attrezzature.push(a); segnaModificato(); chiudiModal(); selezionaOggetto('attrezzatura',a.id); };
+      rb.appendChild(b);
+    });
+    body.appendChild(rb);
+    const bC=document.createElement('button'); bC.className='btn'; bC.textContent='Chiudi'; bC.onclick=chiudiModal; foot.appendChild(bC);
+  });
+}
+function apriElencoPezzi(){
+  apriModal('Pezzi', (body,foot)=>{
+    renderElenco(body, progetto.pezzi, {
+      titoloItem:p=>p.nome||'(senza nome)',
+      subItem:p=>(p.origine||'senza origine')+' · '+(p.ruolo==='lavorato'?'lavorato':'ostacolo'),
+      coloreItem:p=>p.ruolo==='lavorato'?'var(--active)':'var(--piece)',
+      onSeleziona:p=>{ chiudiModal(); selezionaOggetto('pezzo',p.id); },
+      onRimuovi:p=>apriConferma('Rimuovere il pezzo "'+(p.nome||p.id)+'"?', ()=>{
+        progetto.pezzi=progetto.pezzi.filter(x=>x.id!==p.id);
+        if(progetto.ui.selezione&&progetto.ui.selezione.tipo==='pezzo'&&progetto.ui.selezione.id===p.id) progetto.ui.selezione=null;
+        segnaModificato(); riDisegnaModal();
+      })
+    });
+    const bAgg=document.createElement('button'); bAgg.className='btn primario'; bAgg.style.marginTop='8px'; bAgg.textContent='+ Nuovo pezzo';
+    bAgg.onclick=()=>{ const p=creaPezzo(); progetto.pezzi.push(p); segnaModificato(); chiudiModal(); selezionaOggetto('pezzo',p.id); };
+    body.appendChild(bAgg);
+    const bC=document.createElement('button'); bC.className='btn'; bC.textContent='Chiudi'; bC.onclick=chiudiModal; foot.appendChild(bC);
+  });
+}
+
+/* =====================================================================
+   13. STATO GLOBALE (badge) E ABILITAZIONE PULSANTE VERIFICA
+   ===================================================================== */
+function classeBadge(stato){
+  if(stato===STATI.COLLISIONE) return 'st-collisione';
+  if(stato===STATI.MARGINE_INSUFFICIENTE) return 'st-margine-insufficiente';
+  if(stato===STATI.AVVISO) return 'st-avviso';
+  if(stato===STATI.OK) return 'st-ok';
+  if(stato===STATI.VERIFICA_NON_ESEGUIBILE) return 'st-verifica-non-eseguibile';
+  if(stato===STATI.DATI_INCOMPLETI) return 'st-dati-incompleti';
+  return 'st-non-configurato';
+}
+function iconaBadge(stato){
+  if(stato===STATI.COLLISIONE) return '⛔';
+  if(stato===STATI.MARGINE_INSUFFICIENTE || stato===STATI.AVVISO) return '⚠';
+  if(stato===STATI.OK) return '✓';
+  return '◆';
+}
+function datiMinimiPerVerifica(){
+  return Motore._tavolaCompleta(progetto.macchina) && (progetto.attrezzature.length>0 || progetto.pezzi.length>0);
+}
+function aggiornaAbilitazioneVerifica(){
+  const btn=document.getElementById('btn-verify');
+  const ok=datiMinimiPerVerifica();
+  btn.disabled=!ok;
+  btn.title= ok? '' : 'Completa la tavola macchina e aggiungi almeno un\u2019attrezzatura o un pezzo per abilitare la verifica.';
+}
+function aggiornaBadgeGlobale(){
+  ultimoRisultato = Motore.eseguiControlli(progetto);
+  const badge=document.getElementById('badge-stato-globale');
+  badge.className='badge-stato '+classeBadge(ultimoRisultato.globale);
+  badge.querySelector('.icona').textContent=iconaBadge(ultimoRisultato.globale);
+  document.getElementById('badge-stato-testo').textContent=ultimoRisultato.globale;
+  aggiornaAbilitazioneVerifica();
+}
+function riDisegnaTutto(){
+  renderAlbero();
+  if(progetto.ui.selezione) renderPannelloProprieta();
+  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+  aggiornaBadgeGlobale();
+}
+function riDisegnaAppCompleta(){
+  renderMenubar(); renderTabsVista(); renderToolbarCanvas();
+  renderAlbero(); renderPannelloProprieta();
+  document.getElementById('svg-host').classList.toggle('hidden', progetto.ui.vistaAttiva!=='pianta');
+  document.getElementById('foto-host').classList.toggle('hidden', progetto.ui.vistaAttiva!=='foto');
+  if(progetto.ui.vistaAttiva==='pianta') ricalcolaEDisegnaPianta(); else renderVistaFoto();
+  aggiornaBadgeGlobale();
+}
+function renderTabsVista(){
+  const host=document.getElementById('view-tabs'); host.innerHTML='';
+  [{id:'pianta',label:'Pianta (XY)',abil:true},{id:'foto',label:'Foto riferimento',abil:true},
+   {id:'laterale',label:'Laterale (XZ)',abil:false},{id:'frontale',label:'Frontale (YZ)',abil:false}].forEach(t=>{
+    const b=document.createElement('button'); b.className='tab-btn'+(progetto.ui.vistaAttiva===t.id?' attiva':''); b.textContent=t.label; b.disabled=!t.abil;
+    if(t.abil) b.onclick=()=>mostraVista(t.id);
+    host.appendChild(b);
+  });
+  const nota=document.createElement('span'); nota.className='tab-nota-disab'; nota.textContent='Laterale/Frontale: pianificate per una versione successiva.'; host.appendChild(nota);
+}
+function renderToolbarCanvas(){
+  const host=document.getElementById('canvas-toolbar'); host.innerHTML='';
+  if(progetto.ui.vistaAttiva==='pianta'){
+    const bOut=document.createElement('button'); bOut.className='tool-btn'; bOut.textContent='\u2212'; bOut.title='Riduci zoom';
+    bOut.onclick=()=>{ progetto.ui.zoom=clampZoom(progetto.ui.zoom*0.85); disegnaContenutoSvg(); document.getElementById('zoom-val').textContent=Math.round(progetto.ui.zoom*100)+'%'; };
+    const zv=document.createElement('span'); zv.id='zoom-val'; zv.textContent=Math.round(progetto.ui.zoom*100)+'%';
+    const bIn=document.createElement('button'); bIn.className='tool-btn'; bIn.textContent='+'; bIn.title='Aumenta zoom';
+    bIn.onclick=()=>{ progetto.ui.zoom=clampZoom(progetto.ui.zoom*1.18); disegnaContenutoSvg(); document.getElementById('zoom-val').textContent=Math.round(progetto.ui.zoom*100)+'%'; };
+    const bFit=document.createElement('button'); bFit.className='tool-btn'; bFit.style.fontSize='11px'; bFit.textContent='FIT'; bFit.title='Adatta alla finestra';
+    bFit.onclick=()=>{ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; ricalcolaEDisegnaPianta(); document.getElementById('zoom-val').textContent='100%'; };
+    host.appendChild(bOut); host.appendChild(zv); host.appendChild(bIn);
+    const sep=document.createElement('div'); sep.className='tool-sep'; host.appendChild(sep); host.appendChild(bFit);
+    const sep2=document.createElement('div'); sep2.className='tool-sep'; host.appendChild(sep2);
+    const chkG=document.createElement('label'); chkG.className='tool-check'; chkG.innerHTML='<input type="checkbox" '+(progetto.ui.grigliaVisibile?'checked':'')+'> Griglia';
+    chkG.querySelector('input').onchange=(e)=>{ progetto.ui.grigliaVisibile=e.target.checked; disegnaContenutoSvg(); };
+    host.appendChild(chkG);
+    const chkS=document.createElement('label'); chkS.className='tool-check';
+    chkS.innerHTML='<input type="checkbox" '+(progetto.ui.snapAttivo?'checked':'')+'> Snap'+(isNum(progetto.macchina.passoGriglia)?(' ('+formattaNumero(progetto.macchina.passoGriglia,2)+'mm)'):' (passo non configurato)');
+    chkS.querySelector('input').onchange=(e)=>{ progetto.ui.snapAttivo=e.target.checked; };
+    host.appendChild(chkS);
+    const spacer=document.createElement('div'); spacer.className='spacer'; host.appendChild(spacer);
+    const bOrig=document.createElement('label'); bOrig.className='tool-check'; bOrig.innerHTML='<input type="checkbox" '+(progetto.ui.origHidden?'':'checked')+'> Origini';
+    bOrig.querySelector('input').onchange=(e)=>{ progetto.ui.origHidden=!e.target.checked; disegnaContenutoSvg(); };
+    host.appendChild(bOrig);
+  } else if(progetto.ui.vistaAttiva==='foto'){
+    const bCarica=document.createElement('button'); bCarica.className='btn piccolo'; bCarica.textContent='Carica foto'; bCarica.onclick=()=>document.getElementById('file-import-photo').click();
+    host.appendChild(bCarica);
+    if(progetto.fotoRiferimento.dataUrl){
+      const chkVis=document.createElement('label'); chkVis.className='tool-check'; chkVis.innerHTML='<input type="checkbox" '+(progetto.fotoRiferimento.visibile?'checked':'')+'> Visibile';
+      chkVis.querySelector('input').onchange=(e)=>{ progetto.fotoRiferimento.visibile=e.target.checked; document.getElementById('foto-host').style.display=e.target.checked?'flex':'none'; segnaModificato(); };
+      host.appendChild(chkVis);
+      const lab=document.createElement('label'); lab.className='tool-check'; lab.textContent='Opacit\u00e0 ';
+      const range=document.createElement('input'); range.type='range'; range.min=0.1; range.max=1; range.step=0.05; range.value=progetto.fotoRiferimento.opacita; range.style.width='90px';
+      range.oninput=()=>{ progetto.fotoRiferimento.opacita=+range.value; renderVistaFoto(); };
+      range.onchange=()=>segnaModificato();
+      lab.appendChild(range); host.appendChild(lab);
+    }
+  }
+}
+
+/* =====================================================================
+   14. RAPPORTO ANOMALIE (modale)
+   ===================================================================== */
+function classeSeverita(g){
+  if(g===STATI.COLLISIONE) return 'sev-collisione';
+  if(g===STATI.MARGINE_INSUFFICIENTE || g===STATI.AVVISO) return 'sev-margine';
+  return 'sev-info';
+}
+function apriReportAnomalie(){
+  const r = Motore.eseguiControlli(progetto);
+  ultimoRisultato = r;
+  apriModal('Rapporto controllo collisione', (body,foot)=>{
+    const bg=document.createElement('div'); bg.className='badge-stato '+classeBadge(r.globale); bg.style.marginBottom='10px'; bg.style.fontSize='13px';
+    bg.innerHTML='<span class="icona">'+iconaBadge(r.globale)+'</span><span>'+r.globale+'</span>'; body.appendChild(bg);
+
+    const conteggi=document.createElement('div'); conteggi.className='riepilogo-conteggi';
+    function pill(txt,cvar){ const p=document.createElement('div'); p.className='conteggio-pill'; p.style.color='var('+cvar+')'; p.style.borderColor='var('+cvar+')'; p.textContent=txt; return p; }
+    conteggi.appendChild(pill(r.contatori.collisioni+' collisioni','--danger'));
+    conteggi.appendChild(pill(r.contatori.margini+' margini insufficienti','--warn'));
+    conteggi.appendChild(pill(r.contatori.incompleti+' dati incompleti/non configurati','--missing'));
+    body.appendChild(conteggi);
+
+    r.note.forEach(n=>{ const d=document.createElement('div'); d.className='nota-campo'; d.style.marginBottom='10px'; d.textContent=n; body.appendChild(d); });
+
+    if(r.anomalie.length===0){
+      const ok=document.createElement('div'); ok.className='anomalia-card sev-info';
+      ok.textContent='Nessuna anomalia nelle categorie di controllo effettivamente valutabili con i dati attualmente configurati.';
+      body.appendChild(ok);
+    }
+    r.anomalie.forEach(a=>{
+      const card=document.createElement('div'); card.className='anomalia-card '+classeSeverita(a.gravita);
+      const head=document.createElement('div'); head.className='anomalia-head';
+      const tit=document.createElement('div'); tit.className='anomalia-tipo'; tit.textContent=a.titolo;
+      const badge=document.createElement('div'); badge.className='anomalia-badge'; badge.textContent=a.gravita;
+      head.appendChild(tit); head.appendChild(badge); card.appendChild(head);
+      const corpo=document.createElement('div'); corpo.className='anomalia-corpo'; corpo.textContent=a.descrizione; card.appendChild(corpo);
+      const griglia=document.createElement('div'); griglia.className='anomalia-griglia';
+      function riga(k,v){ if(v===null||v===undefined||v==='') return; const kk=document.createElement('div'); kk.className='k'; kk.textContent=k; const vv=document.createElement('div'); vv.className='v'; vv.textContent=v; griglia.appendChild(kk); griglia.appendChild(vv); }
+      riga('Oggetti coinvolti', a.oggetti.map(o=>o.nome).join(', '));
+      riga('Origine attiva', a.origineAttiva);
+      riga('Asse interessato', a.asse);
+      riga('Distanza/penetrazione', a.distanzaOPenetrazione!==null && a.distanzaOPenetrazione!==undefined ? fmtMm(a.distanzaOPenetrazione) : null);
+      riga('Margine richiesto', a.margineRichiesto!==null && a.margineRichiesto!==undefined ? fmtMm(a.margineRichiesto) : null);
+      if(a.coordMacchina && a.coordMacchina.length) riga('Coord. macchina', a.coordMacchina.map(c=>c.nome+': X'+fmtMm(c.x)+' Y'+fmtMm(c.y)).join('  |  '));
+      card.appendChild(griglia);
+      const corr=document.createElement('div'); corr.className='nota-campo'; corr.style.marginTop='6px'; corr.textContent='Correzione possibile: '+a.correzionePossibile;
+      card.appendChild(corr);
+      body.appendChild(card);
+    });
+
+    const bEsp=document.createElement('button'); bEsp.className='btn'; bEsp.textContent='Esporta .txt'; bEsp.onclick=esportaRapportoTxt;
+    const bChiudi=document.createElement('button'); bChiudi.className='btn primario'; bChiudi.textContent='Chiudi'; bChiudi.onclick=()=>{ chiudiModal(); aggiornaBadgeGlobale(); };
+    foot.appendChild(bEsp); foot.appendChild(bChiudi);
+  }, {largo:true});
+}
+
+/* =====================================================================
+   15. WIZARD "INIZIO CONTROLLO COLLISIONE" (solo percorso statico: passi
+   utensile/percorso della specifica sono esplicitamente saltati e segnalati,
+   non simulati)
+   ===================================================================== */
+let _wizardStepIdx = 0;
+let _wizardFocusAttrezzatura = null, _wizardFocusPezzo = null;
+
+function boxFocus(body, obj, campi){
+  const box=document.createElement('div'); box.style.marginTop='12px'; box.style.paddingTop='12px'; box.style.borderTop='1px solid var(--bd)';
+  campi(box, obj);
+  body.appendChild(box);
+}
+const WIZARD_STEPS = [
+  { titolo:'1. Macchina e corse', sotto:'Nome macchina e corse (MCS).', render:(body)=>{
+      campoTesto(body, progetto.macchina, 'nome', 'Nome macchina');
+      let r=document.createElement('div'); r.className='riga2'; body.appendChild(r);
+      campoNumero(r,progetto.macchina.corse,'xMin','X minimo',{modale:true}); campoNumero(r,progetto.macchina.corse,'xMax','X massimo',{modale:true});
+      r=document.createElement('div'); r.className='riga2'; body.appendChild(r);
+      campoNumero(r,progetto.macchina.corse,'yMin','Y minimo',{modale:true}); campoNumero(r,progetto.macchina.corse,'yMax','Y massimo',{modale:true});
+      r=document.createElement('div'); r.className='riga2'; body.appendChild(r);
+      campoNumero(r,progetto.macchina.corse,'zMin','Z minimo',{modale:true}); campoNumero(r,progetto.macchina.corse,'zMax','Z massimo',{modale:true});
+  }},
+  { titolo:'2. Tavola', sotto:'Dimensioni e posizione della tavola nel sistema macchina.', render:(body)=>{
+      let r=document.createElement('div'); r.className='riga3'; body.appendChild(r);
+      campoNumero(r,progetto.macchina.tavola,'lunghezza','Lunghezza X',{modale:true}); campoNumero(r,progetto.macchina.tavola,'larghezza','Larghezza Y',{modale:true}); campoNumero(r,progetto.macchina.tavola,'quotaSuperiore','Quota superiore Z',{modale:true});
+      r=document.createElement('div'); r.className='riga3'; body.appendChild(r);
+      campoNumero(r,progetto.macchina.tavola.posizione,'x','Pos. X',{modale:true}); campoNumero(r,progetto.macchina.tavola.posizione,'y','Pos. Y',{modale:true}); campoNumero(r,progetto.macchina.tavola.posizione,'z','Pos. Z',{modale:true});
+  }},
+  { titolo:'3. Attrezzature', sotto:'Piano magnetico, morsa o altre attrezzature presenti sulla tavola.', render:(body)=>{
+      renderElenco(body, progetto.attrezzature, { selezionatoId:_wizardFocusAttrezzatura, titoloItem:a=>a.nome||'(senza nome)', subItem:a=>a.tipo,
+        coloreItem:a=>a.tipo==='piano_magnetico'?'var(--plate)':a.tipo==='morsa'?'var(--vise)':'var(--steel)',
+        onSeleziona:a=>{ _wizardFocusAttrezzatura=a.id; riDisegnaModal(); },
+        onRimuovi:a=>{ progetto.attrezzature=progetto.attrezzature.filter(x=>x.id!==a.id); if(_wizardFocusAttrezzatura===a.id)_wizardFocusAttrezzatura=null; segnaModificato(); riDisegnaModal(); } });
+      const rb=document.createElement('div'); rb.className='riga-btn';
+      [['piano_magnetico','+ Piano magnetico'],['morsa','+ Morsa'],['altro','+ Altra']].forEach(([tp,lb])=>{
+        const b=document.createElement('button'); b.className='btn'; b.textContent=lb;
+        b.onclick=()=>{ const a=creaAttrezzatura(tp); progetto.attrezzature.push(a); _wizardFocusAttrezzatura=a.id; segnaModificato(); riDisegnaModal(); };
+        rb.appendChild(b);
+      });
+      body.appendChild(rb);
+      const a = progetto.attrezzature.find(x=>x.id===_wizardFocusAttrezzatura);
+      if(a) boxFocus(body, a, (box,a)=>{
+        campoTesto(box,a,'nome','Nome',{modale:true});
+        let r=document.createElement('div'); r.className='riga3'; box.appendChild(r);
+        campoNumero(r,a,'lunghezzaX','Lungh. X',{modale:true}); campoNumero(r,a,'larghezzaY','Largh. Y',{modale:true}); campoNumero(r,a,'altezzaZ','Alt. Z',{modale:true});
+        r=document.createElement('div'); r.className='riga3'; box.appendChild(r);
+        campoNumero(r,a,'x','Pos. X',{modale:true}); campoNumero(r,a,'y','Pos. Y',{modale:true}); campoNumero(r,a,'zBase','Pos. Z base',{modale:true});
+        campoNumero(box,a,'rotazione','Rotazione (\u00b0)',{modale:true});
+      });
+  }},
+  { titolo:'4. Origini G54\u2013G59', sotto:'Coordinate macchina (MCS) di ciascuna origine pezzo.', render:(body)=>{
+      CODICI_ORIGINE.forEach(c=>{
+        const o=progetto.origini[c];
+        const box=document.createElement('div'); box.style.border='1px solid var(--bd)'; box.style.borderRadius='3px'; box.style.padding='8px'; box.style.marginBottom='8px';
+        const tit=document.createElement('div'); tit.style.fontWeight='700'; tit.style.color=o.colore; tit.style.marginBottom='4px'; tit.textContent=c; box.appendChild(tit);
+        const r=document.createElement('div'); r.className='riga3'; box.appendChild(r);
+        campoNumero(r,o,'x','X',{modale:true}); campoNumero(r,o,'y','Y',{modale:true}); campoNumero(r,o,'z','Z',{modale:true});
+        body.appendChild(box);
+      });
+  }},
+  { titolo:'5. Pezzi e stampi', sotto:'Pezzi montati su attrezzature o direttamente in tavola.', render:(body)=>{
+      renderElenco(body, progetto.pezzi, { selezionatoId:_wizardFocusPezzo, titoloItem:p=>p.nome||'(senza nome)', subItem:p=>(p.origine||'senza origine'),
+        coloreItem:p=>p.ruolo==='lavorato'?'var(--active)':'var(--piece)',
+        onSeleziona:p=>{ _wizardFocusPezzo=p.id; riDisegnaModal(); },
+        onRimuovi:p=>{ progetto.pezzi=progetto.pezzi.filter(x=>x.id!==p.id); if(_wizardFocusPezzo===p.id)_wizardFocusPezzo=null; segnaModificato(); riDisegnaModal(); } });
+      const bAgg=document.createElement('button'); bAgg.className='btn'; bAgg.textContent='+ Nuovo pezzo';
+      bAgg.onclick=()=>{ const p=creaPezzo(); progetto.pezzi.push(p); _wizardFocusPezzo=p.id; segnaModificato(); riDisegnaModal(); };
+      body.appendChild(bAgg);
+      const p = progetto.pezzi.find(x=>x.id===_wizardFocusPezzo);
+      if(p) boxFocus(body, p, (box,p)=>{
+        campoTesto(box,p,'nome','Nome',{modale:true});
+        campoSelect(box,p,'origine','Origine',[{value:'',label:'\u2014 nessuna \u2014'}, ...CODICI_ORIGINE.map(c=>({value:c,label:c}))],{modale:true});
+        campoSelect(box,p,'supporto','Supporto',[{value:'',label:'\u2014 nessuno \u2014'},{value:'tavola',label:'Tavola (diretto)'}, ...progetto.attrezzature.map(a=>({value:a.id,label:a.nome||a.id}))],{modale:true});
+        let r=document.createElement('div'); r.className='riga2'; box.appendChild(r);
+        campoNumero(r,p,'xMin','X min (da origine)',{modale:true}); campoNumero(r,p,'xMax','X max',{modale:true});
+        r=document.createElement('div'); r.className='riga2'; box.appendChild(r);
+        campoNumero(r,p,'yMin','Y min',{modale:true}); campoNumero(r,p,'yMax','Y max',{modale:true});
+        r=document.createElement('div'); r.className='riga2'; box.appendChild(r);
+        campoNumero(r,p,'zMin','Z min',{modale:true}); campoNumero(r,p,'zMax','Z max',{modale:true});
+      });
+  }},
+  { titolo:'6. Pezzo da lavorare', sotto:'Contrassegna quali pezzi sono "lavorati" (attivi); gli altri restano ostacoli.', render:(body)=>{
+      if(progetto.pezzi.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Nessun pezzo inserito nel passo precedente.'; body.appendChild(v); return; }
+      progetto.pezzi.forEach(p=>{
+        const riga=document.createElement('div'); riga.className='campo-check';
+        const chk=document.createElement('input'); chk.type='checkbox'; chk.checked=p.ruolo==='lavorato';
+        chk.onchange=()=>{ p.ruolo=chk.checked?'lavorato':'ostacolo'; segnaModificato(); };
+        const lab=document.createElement('label'); lab.style.textTransform='none'; lab.textContent=(p.nome||'(senza nome)')+' \u2014 origine '+(p.origine||'non assegnata');
+        riga.appendChild(chk); riga.appendChild(lab); body.appendChild(riga);
+      });
+  }},
+  { titolo:'7. Riepilogo', sotto:'Il controllo dinamico utensile/percorso non \u00e8 disponibile in questa versione: la verifica riguarder\u00e0 solo gli aspetti statici.', render:(body)=>{
+      const r = Motore.eseguiControlli(progetto);
+      function riga(label,val){ const d=document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.padding='5px 0'; d.style.borderBottom='1px solid var(--bd)'; d.style.fontSize='12.5px';
+        const l=document.createElement('span'); l.style.color='var(--tx-dim)'; l.textContent=label; const v=document.createElement('span'); v.className='mono'; v.textContent=val; d.appendChild(l); d.appendChild(v); body.appendChild(d); }
+      riga('Macchina', progetto.macchina.nome||'NON CONFIGURATO');
+      riga('Tavola', Motore._tavolaCompleta(progetto.macchina)?'configurata':'DATI INCOMPLETI');
+      riga('Corse macchina', Motore._corseComplete(progetto.macchina)?'configurate':'DATI INCOMPLETI');
+      riga('Attrezzature', String(progetto.attrezzature.length));
+      riga('Origini con coordinate', CODICI_ORIGINE.filter(c=>tuttiNum(progetto.origini[c].x,progetto.origini[c].y)).length+' / 6');
+      riga('Pezzi', String(progetto.pezzi.length));
+      riga('Pezzi "lavorato"', String(progetto.pezzi.filter(p=>p.ruolo==='lavorato').length));
+      riga('Stato attuale', r.globale);
+      const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginTop='10px';
+      nota.textContent='Al termine verr\u00e0 aperto il rapporto con il dettaglio dei controlli statici effettivamente eseguibili con i dati inseriti.';
+      body.appendChild(nota);
+  }}
+];
+function apriWizard(startIdx){ _wizardStepIdx=startIdx||0; apriModal('Inizio controllo collisione', renderWizardBody, {largo:true}); }
+function renderWizardBody(body, foot){
+  const step = WIZARD_STEPS[_wizardStepIdx];
+  const ind=document.createElement('div'); ind.className='wizard-step-ind';
+  WIZARD_STEPS.forEach((s,i)=>{ const sp=document.createElement('span'); sp.className= i<_wizardStepIdx?'fatto':(i===_wizardStepIdx?'corrente':''); ind.appendChild(sp); });
+  body.appendChild(ind);
+  const h=document.createElement('div'); h.className='wizard-titolo'; h.textContent=step.titolo; body.appendChild(h);
+  const sub=document.createElement('div'); sub.className='wizard-sotto'; sub.textContent=step.sotto; body.appendChild(sub);
+  step.render(body);
+  const bIndietro=document.createElement('button'); bIndietro.className='btn'; bIndietro.textContent='\u2190 Indietro'; bIndietro.disabled=_wizardStepIdx===0;
+  bIndietro.onclick=()=>{ _wizardStepIdx=Math.max(0,_wizardStepIdx-1); riDisegnaModal(); };
+  const bAnnulla=document.createElement('button'); bAnnulla.className='btn'; bAnnulla.textContent='Chiudi'; bAnnulla.onclick=()=>{ chiudiModal(); riDisegnaAppCompleta(); };
+  const bAvanti=document.createElement('button'); bAvanti.className='btn primario'; bAvanti.textContent= _wizardStepIdx===WIZARD_STEPS.length-1 ? 'Termina' : 'Avanti \u2192';
+  bAvanti.onclick=()=>{
+    if(_wizardStepIdx===WIZARD_STEPS.length-1){
+      chiudiModal(); progetto.ui.wizardCompletato=true; segnaModificato(); riDisegnaAppCompleta();
+      if(datiMinimiPerVerifica()) apriReportAnomalie();
+    } else { _wizardStepIdx++; riDisegnaModal(); }
+  };
+  foot.appendChild(bIndietro); foot.appendChild(bAnnulla); foot.appendChild(bAvanti);
+}
+
+/* =====================================================================
+   16. DIAGNOSTICA (test sintetici sul motore reale — AIUTO \u2192 Diagnostica)
+   ===================================================================== */
+function testDiagnostici(){
+  const risultati=[];
+  function t(nome,fn,nonApplicabile){
+    if(nonApplicabile){ risultati.push({nome, esito:'N/D'}); return; }
+    try{ const ok=!!fn(); risultati.push({nome, esito: ok?'PASS':'FAIL'}); }
+    catch(e){ risultati.push({nome, esito:'FAIL', errore:e.message}); }
+  }
+  t('1. Progetto vuoto \u2192 verifica bloccata', ()=>{
+    const p=creaProgettoVuoto(); return Motore.eseguiControlli(p).globale===STATI.VERIFICA_NON_ESEGUIBILE;
+  });
+  t('2. Attrezzatura fuori tavola \u2192 collisione rilevata', ()=>{
+    const p=creaProgettoVuoto(); p.macchina.tavola={lunghezza:600,larghezza:400,quotaSuperiore:0,posizione:{x:0,y:0,z:0}};
+    const a=creaAttrezzatura('piano_magnetico'); a.lunghezzaX=300;a.larghezzaY=300;a.altezzaZ=50;a.x=450;a.y=50;a.zBase=0; p.attrezzature.push(a);
+    return Motore.eseguiControlli(p).anomalie.some(x=>x.tipo==='ATTREZZATURA_FUORI_TAVOLA');
+  });
+  t('3. Due pezzi sovrapposti \u2192 collisione rilevata', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    const p1=creaPezzo(); p1.origine='G54'; p1.supporto='tavola'; p1.xMin=0;p1.xMax=100;p1.yMin=0;p1.yMax=100;p1.zMin=0;p1.zMax=10;
+    const p2=creaPezzo(); p2.origine='G54'; p2.supporto='tavola'; p2.xMin=50;p2.xMax=150;p2.yMin=0;p2.yMax=100;p2.zMin=0;p2.zMax=10;
+    p.pezzi.push(p1,p2);
+    return Motore.eseguiControlli(p).anomalie.some(x=>x.tipo==='PEZZO_CONTRO_PEZZO'&&x.gravita===STATI.COLLISIONE);
+  });
+  t('4. Distanza inferiore al margine \u2192 avviso rilevato', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    const p1=creaPezzo(); p1.origine='G54'; p1.supporto='tavola'; p1.margineSicurezza=10; p1.xMin=0;p1.xMax=100;p1.yMin=0;p1.yMax=100;p1.zMin=0;p1.zMax=10;
+    const p2=creaPezzo(); p2.origine='G54'; p2.supporto='tavola'; p2.margineSicurezza=10; p2.xMin=105;p2.xMax=205;p2.yMin=0;p2.yMax=100;p2.zMin=0;p2.zMax=10;
+    p.pezzi.push(p1,p2);
+    return Motore.eseguiControlli(p).anomalie.some(x=>x.gravita===STATI.MARGINE_INSUFFICIENTE);
+  });
+  t('5. Volume oltre una corsa \u2192 asse e superamento indicati', ()=>{
+    const p=creaProgettoVuoto(); p.macchina.corse={xMin:0,xMax:500,yMin:0,yMax:400,zMin:-300,zMax:0};
+    const a=creaAttrezzatura('morsa'); a.lunghezzaX=200;a.larghezzaY=150;a.altezzaZ=40;a.x=450;a.y=50;a.zBase=-50; p.attrezzature.push(a);
+    const an=Motore.eseguiControlli(p).anomalie.find(x=>x.tipo==='SUPERAMENTO_CORSE');
+    return !!an && an.asse==='X' && an.distanzaOPenetrazione!==null;
+  });
+  t('6. Percorso vicino a un ostacolo', null, true);
+  t('7. Assenza di percorso/volume \u2192 collisione dinamica non verificabile', null, true);
+  t('8. Salvataggio e riapertura \u2192 dati invariati', ()=>{
+    const p=creaProgettoVuoto(); p.macchina.corse.xMin=-12.5; const a=creaAttrezzatura('morsa'); a.x=3.5; p.attrezzature.push(a);
+    const ripristinato=normalizzaProgettoCaricato(JSON.parse(JSON.stringify(p)));
+    return ripristinato.macchina.corse.xMin===-12.5 && ripristinato.attrezzature[0].x===3.5;
+  });
+  t('9. Numeri con virgola decimale \u2192 interpretazione corretta', ()=>{
+    return parseNumeroIt('12,5')===12.5 && parseNumeroIt('-3,25')===-3.25 && parseNumeroIt('')===null && Number.isNaN(parseNumeroIt('abc'));
+  });
+  return risultati;
+}
+function apriDiagnostica(){
+  apriModal('Diagnostica', (body,foot)=>{
+    const intro=document.createElement('div'); intro.className='nota-campo'; intro.style.marginBottom='10px';
+    intro.textContent='Test eseguiti ora, dal vivo, sul motore statico realmente presente in questa build. I casi 6 e 7 riguardano il controllo dinamico utensile/percorso, non ancora implementato: sono segnalati come non applicabili (N/D), non fatti passare artificialmente.';
+    body.appendChild(intro);
+    testDiagnostici().forEach(r=>{
+      const riga=document.createElement('div'); riga.className='diag-riga';
+      const es=document.createElement('div'); es.className='diag-esito '+(r.esito==='PASS'?'pass':(r.esito==='N/D'?'':'fail'));
+      es.style.color = r.esito==='N/D' ? 'var(--tx-dim)' : '';
+      es.textContent=r.esito;
+      const testo=document.createElement('div'); testo.className='diag-testo';
+      testo.innerHTML = r.nome + (r.errore ? ' \u2014 <span style="color:var(--danger)">'+r.errore+'</span>' : '');
+      riga.appendChild(es); riga.appendChild(testo); body.appendChild(riga);
+    });
+    const bChiudi=document.createElement('button'); bChiudi.className='btn primario'; bChiudi.textContent='Chiudi'; bChiudi.onclick=chiudiModal; foot.appendChild(bChiudi);
+  }, {largo:true});
+}
+
+/* =====================================================================
+   17. AIUTO / INFORMAZIONI E LIMITI
+   ===================================================================== */
+function apriAiuto(){
+  apriModal('Informazioni e limiti del progetto', (body,foot)=>{
+    body.innerHTML = `
+    <p style="font-size:13px;color:var(--tx-mid)"><b style="color:var(--warn)">Strumento di pre-verifica geometrica.</b> Non \u00e8 un simulatore CNC certificato. Non sostituisce: simulazione CAM; simulazione del controllo CNC; Single Block; Dry Run; prova con avanzamento ridotto; procedure di sicurezza della macchina.</p>
+    <p style="font-size:13px;color:var(--tx-mid)">Versione app: <b class="mono">${APP_VERSION}</b> \u2014 nucleo statico.</p>
+    <fieldset class="gruppo"><legend>Cosa fa questa versione</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
+      <li>Configurazione macchina, tavola, corse, orientamento assi a schermo.</li>
+      <li>Piano magnetico, morsa, altre attrezzature, con zone di ingombro aggiuntive e punti di fissaggio.</li>
+      <li>Origini G54\u2013G59.</li>
+      <li>Pezzi con quote X/Y/Z minimo-massimo rispetto all'origine, anche esterna al pezzo.</li>
+      <li>Controllo <b>statico</b>: attrezzatura fuori tavola, attrezzatura contro attrezzatura, pezzo contro pezzo, pezzo fuori dal supporto o dalla tavola, pezzo contro altra attrezzatura, margine insufficiente (stima conservativa per difetto), superamento corse macchina, intersezione con zone vietate \u2014 con rettangoli orientati (OBB) e Separating Axis Theorem, non semplici AABB, combinati con la sovrapposizione degli intervalli Z.</li>
+      <li>Vista in pianta (XY) quotata: zoom, pan, trascinamento, selezione, griglia, snap.</li>
+      <li>Vista foto di riferimento, sempre etichettata "FOTO DI RIFERIMENTO \u2014 NON IN SCALA".</li>
+      <li>Salvataggio/apertura progetto in JSON, autosalvataggio locale, esportazione rapporto in .txt.</li>
+      <li>Diagnostica con casi sintetici eseguiti dal vivo sul motore reale.</li>
+    </ul></fieldset>
+    <fieldset class="gruppo"><legend>Cosa NON fa ancora questa versione</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
+      <li>Nessun controllo <b>dinamico</b> di utensile, codolo e portautensile lungo un percorso o un volume di lavorazione (Modalit\u00e0 A/B della specifica). I dati utensile inseriti in UTENSILE sono salvati ma non ancora usati nei calcoli: ogni rapporto lo segnala esplicitamente.</li>
+      <li>Nessun parser di file G-code (.nc/.tap/.txt).</li>
+      <li>Viste laterale (XZ) e frontale (YZ) non ancora implementate (tab disabilitate in Vista).</li>
+      <li>Nessun ottimizzatore automatico del piazzamento ("Suggerisci piazzamento").</li>
+      <li>La foto di riferimento viene inclusa nell'autosalvataggio locale solo se lo spazio disponibile lo consente; non \u00e8 ancora inclusa nel file JSON di "Salva"/"Salva con nome".</li>
+      <li>La rotazione di attrezzature e pezzi si imposta da campo numerico: non \u00e8 ancora trascinabile a schermo (la sola posizione X/Y lo \u00e8).</li>
+      <li>"Salva" scarica una nuova copia del file: per limiti del browser non pu\u00f2 sovrascrivere in modo invisibile il file originale.</li>
+    </ul></fieldset>
+    <p style="font-size:11.5px;color:var(--tx-dim)">Il margine tra due elementi separati \u00e8 calcolato come limite inferiore conservativo (proiezione sugli assi del test SAT): la distanza reale non \u00e8 mai inferiore al valore indicato, ma in configurazioni "ad angolo" pu\u00f2 essere superiore. Questo pu\u00f2 generare avvisi di margine insufficiente pi\u00f9 cautelativi del reale, mai il contrario.</p>`;
+    const bChiudi=document.createElement('button'); bChiudi.className='btn primario'; bChiudi.textContent='Chiudi'; bChiudi.onclick=chiudiModal; foot.appendChild(bChiudi);
+  }, {largo:true});
+}
+
+/* =====================================================================
+   18. INIZIALIZZAZIONE APPLICAZIONE
+   ===================================================================== */
+function inizializzaApp(){
+  const salvato = caricaAutosave();
+  if(salvato) progetto = normalizzaProgettoCaricato(salvato);
+
+  inizializzaInterazioneSvg();
+  document.getElementById('modal-close').onclick = chiudiModal;
+  document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay') chiudiModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !document.getElementById('modal-overlay').classList.contains('hidden')) chiudiModal(); });
+
+  document.getElementById('file-open-json').addEventListener('change', (e)=>{ if(e.target.files[0]) apriProgettoJSON(e.target.files[0]); e.target.value=''; });
+  document.getElementById('file-import-photo').addEventListener('change', (e)=>{ if(e.target.files[0]) importaFotoFile(e.target.files[0]); e.target.value=''; });
+
+  document.getElementById('menu-toggle-mobile').onclick = ()=>{
+    document.getElementById('tree-panel').classList.add('aperto');
+    document.getElementById('props-panel').classList.remove('aperto');
+    document.getElementById('drawer-scrim').classList.add('attivo');
+  };
+  document.getElementById('drawer-scrim').onclick = ()=>{
+    document.getElementById('tree-panel').classList.remove('aperto');
+    document.getElementById('props-panel').classList.remove('aperto');
+    document.getElementById('drawer-scrim').classList.remove('attivo');
+  };
+
+  document.getElementById('btn-wizard').onclick = ()=>apriWizard(0);
+  document.getElementById('btn-verify').onclick = ()=>{ if(datiMinimiPerVerifica()) apriReportAnomalie(); };
+
+  riDisegnaAppCompleta();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', inizializzaApp);
+else inizializzaApp();
+</script>
+</body>
+</html>
