@@ -199,6 +199,14 @@ button{cursor:pointer;}
 }
 .campo input.mono{font-family:var(--font-mono);}
 .campo input:focus, .campo select:focus, .campo textarea:focus{outline:2px solid var(--accent); outline-offset:0;}
+.campo-num-riga{display:flex; gap:6px; align-items:stretch;}
+.campo-num-riga input[type=text]{flex:1 1 auto; min-width:0;}
+.btn-segno{
+  flex:0 0 auto; width:40px; min-height:34px; background:var(--bg-4); border:1px solid var(--bd-strong);
+  color:var(--tx-hi); border-radius:var(--radius); font-family:var(--font-mono); font-size:15px; font-weight:700;
+  line-height:1; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+}
+.btn-segno:active{background:var(--accent); color:#04202f; border-color:var(--accent);}
 .campo textarea{resize:vertical; min-height:44px;}
 .campo-check{display:flex; align-items:center; gap:7px; margin-bottom:9px; font-size:13px; color:var(--tx-mid);}
 .campo-check input{width:16px; height:16px;}
@@ -1597,6 +1605,7 @@ function campoNumero(container, obj, path, label, opz){
   const val=getPath(obj,path);
   if(val===null||val===undefined){ const pill=document.createElement('span'); pill.className='pillola-null'; pill.textContent='NON CONFIGURATO'; lab.appendChild(pill); }
   div.appendChild(lab);
+  const riga=document.createElement('div'); riga.className='campo-num-riga';
   const input=document.createElement('input'); input.type='text'; input.className='mono'; input.inputMode='decimal';
   input.value=(val===null||val===undefined)?'':formattaNumero(val,opz.decimali);
   input.placeholder=opz.placeholder||'—';
@@ -1606,7 +1615,20 @@ function campoNumero(container, obj, path, label, opz){
     setPath(obj,path,n); segnaModificato(); if(opz.onChange) opz.onChange(n);
     if(opz.modale) riDisegnaModal(); else renderPannelloProprieta();
   });
-  div.appendChild(input);
+  riga.appendChild(input);
+  // Pulsante segno: la tastiera numerica "decimal" di iOS Safari non include il tasto "-",
+  // quindi senza questo pulsante non sarebbe possibile digitare quote negative su iPhone.
+  // Alterna solo il prefisso "-" nel testo del campo (senza convalidare subito), per non
+  // interrompere una digitazione in corso: la convalida avviene comunque al cambio focus.
+  const bSegno=document.createElement('button'); bSegno.type='button'; bSegno.className='btn-segno'; bSegno.textContent='±';
+  bSegno.title='Cambia segno'; bSegno.setAttribute('aria-label','Cambia segno (valore negativo/positivo)');
+  bSegno.onclick=(e)=>{
+    e.preventDefault();
+    input.value = input.value.startsWith('-') ? input.value.slice(1) : ('-'+input.value);
+    input.focus();
+  };
+  riga.appendChild(bSegno);
+  div.appendChild(riga);
   if(opz.nota){ const n=document.createElement('div'); n.className='nota-campo'; n.textContent=opz.nota; div.appendChild(n); }
   container.appendChild(div);
 }
