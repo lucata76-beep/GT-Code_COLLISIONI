@@ -64,18 +64,18 @@ button{cursor:pointer;}
 .menu-item{position:relative;}
 .menu-btn{
   background:transparent; border:1px solid transparent; color:var(--tx-mid);
-  padding:8px 10px; border-radius:var(--radius); font-size:12.5px; font-weight:600;
+  padding:10px 12px; border-radius:var(--radius); font-size:15px; font-weight:600;
   letter-spacing:.02em; white-space:nowrap; text-transform:uppercase;
 }
 .menu-btn:hover, .menu-btn.aperto{background:var(--bg-4); color:var(--tx-hi); border-color:var(--bd-strong);}
 .menu-drop{
-  position:absolute; top:100%; left:0; margin-top:4px; min-width:220px;
+  position:absolute; top:100%; left:0; margin-top:4px; min-width:240px;
   background:var(--bg-3); border:1px solid var(--bd-strong); border-radius:var(--radius);
   box-shadow:0 12px 28px rgba(0,0,0,.45); padding:4px; z-index:50;
 }
 .menu-drop button{
   display:flex; width:100%; text-align:left; background:none; border:none; color:var(--tx-mid);
-  padding:8px 10px; border-radius:2px; font-size:13px; gap:8px; align-items:center;
+  padding:11px 12px; border-radius:2px; font-size:16px; gap:8px; align-items:center;
 }
 .menu-drop button:hover{background:var(--bg-4); color:var(--tx-hi);}
 .menu-drop hr{border:none; border-top:1px solid var(--bd); margin:4px 2px;}
@@ -100,22 +100,22 @@ button{cursor:pointer;}
 #canvas-wrap{flex:1 1 auto; display:flex; flex-direction:column; min-width:0; background:var(--bg-0);}
 
 .pannello-titolo{
-  font-family:var(--font-display); font-size:11px; font-weight:700; letter-spacing:.08em;
-  text-transform:uppercase; color:var(--tx-dim); margin:10px 2px 6px; display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--font-display); font-size:12.5px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--tx-dim); margin:12px 2px 7px; display:flex; justify-content:space-between; align-items:center;
 }
 .pannello-titolo:first-child{margin-top:2px;}
 
 .albero-nodo{
-  display:flex; align-items:center; gap:6px; padding:6px 8px; border-radius:var(--radius);
-  font-size:12.5px; color:var(--tx-mid); cursor:pointer; border:1px solid transparent;
+  display:flex; align-items:center; gap:7px; padding:9px 8px; border-radius:var(--radius);
+  font-size:15px; color:var(--tx-mid); cursor:pointer; border:1px solid transparent;
 }
 .albero-nodo:hover{background:var(--bg-3);}
 .albero-nodo.selezionato{background:var(--bg-4); border-color:var(--accent); color:var(--tx-hi);}
-.albero-nodo .pallino{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--steel);}
-.albero-vuoto{font-size:12px; color:var(--tx-dim); padding:4px 8px; font-style:italic;}
+.albero-nodo .pallino{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--steel);}
+.albero-vuoto{font-size:13.5px; color:var(--tx-dim); padding:4px 8px; font-style:italic;}
 .albero-aggiungi{
-  width:100%; margin-top:4px; padding:6px; border:1px dashed var(--bd-strong); background:none;
-  color:var(--accent); border-radius:var(--radius); font-size:12px; font-weight:600;
+  width:100%; margin-top:4px; padding:9px; border:1px dashed var(--bd-strong); background:none;
+  color:var(--accent); border-radius:var(--radius); font-size:14px; font-weight:600;
 }
 .albero-aggiungi:hover{background:var(--bg-3);}
 
@@ -125,8 +125,8 @@ button{cursor:pointer;}
   border-bottom:1px solid var(--bd); background:var(--bg-1);
 }
 .tab-btn{
-  background:none; border:1px solid var(--bd); color:var(--tx-dim); padding:6px 12px;
-  border-radius:var(--radius); font-size:12px; font-weight:600;
+  background:none; border:1px solid var(--bd); color:var(--tx-dim); padding:8px 14px;
+  border-radius:var(--radius); font-size:14px; font-weight:600;
 }
 .tab-btn.attiva{background:var(--bg-4); color:var(--tx-hi); border-color:var(--accent);}
 .tab-btn:disabled{opacity:.35; cursor:not-allowed;}
@@ -159,7 +159,7 @@ button{cursor:pointer;}
 }
 .tool-btn:hover{background:var(--bg-4); color:var(--tx-hi);}
 .tool-sep{width:1px; height:20px; background:var(--bd); margin:0 2px;}
-.tool-check{display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--tx-mid); padding:0 4px;}
+.tool-check{display:flex; align-items:center; gap:5px; font-size:13.5px; color:var(--tx-mid); padding:0 4px;}
 .spacer{flex:1 1 auto;}
 #zoom-val{font-size:11px; color:var(--tx-dim); min-width:38px; text-align:center;}
 
@@ -181,8 +181,8 @@ button{cursor:pointer;}
 .badge-stato.st-margine-insufficiente, .badge-stato.st-avviso{color:var(--warn); border-color:var(--warn); background:var(--warn-fill);}
 .badge-stato.st-ok{color:var(--active); border-color:var(--active); background:var(--active-fill);}
 .btn-grande{
-  flex:1 1 0; max-width:280px; height:38px; border-radius:var(--radius); font-family:var(--font-display);
-  font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:12.5px; border:1px solid var(--bd-strong);
+  flex:1 1 0; max-width:280px; height:44px; border-radius:var(--radius); font-family:var(--font-display);
+  font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:14.5px; border:1px solid var(--bd-strong);
 }
 #btn-wizard{background:var(--bg-4); color:var(--tx-hi);}
 #btn-wizard:hover{border-color:var(--accent);}
@@ -192,10 +192,10 @@ button{cursor:pointer;}
 
 /* ---------- pannello proprietà / form ---------- */
 .campo{margin-bottom:9px;}
-.campo label{display:block; font-size:11px; color:var(--tx-dim); margin-bottom:3px; text-transform:uppercase; letter-spacing:.03em;}
+.campo label{display:block; font-size:12.5px; color:var(--tx-dim); margin-bottom:4px; text-transform:uppercase; letter-spacing:.03em;}
 .campo input[type=text], .campo input[type=color], .campo select, .campo textarea{
   width:100%; background:var(--bg-3); border:1px solid var(--bd-strong); color:var(--tx-hi);
-  padding:7px 8px; border-radius:var(--radius); font-size:13px;
+  padding:9px 10px; border-radius:var(--radius); font-size:15px;
 }
 .campo input.mono{font-family:var(--font-mono);}
 .campo input:focus, .campo select:focus, .campo textarea:focus{outline:2px solid var(--accent); outline-offset:0;}
@@ -208,23 +208,23 @@ button{cursor:pointer;}
 }
 .btn-segno:active{background:var(--accent); color:#04202f; border-color:var(--accent);}
 .campo textarea{resize:vertical; min-height:44px;}
-.campo-check{display:flex; align-items:center; gap:7px; margin-bottom:9px; font-size:13px; color:var(--tx-mid);}
-.campo-check input{width:16px; height:16px;}
+.campo-check{display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:15px; color:var(--tx-mid);}
+.campo-check input{width:19px; height:19px;}
 .riga2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
 .riga3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
 fieldset.gruppo{border:1px solid var(--bd); border-radius:var(--radius); margin:0 0 12px; padding:10px;}
-fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); padding:0 6px;}
-.nota-campo{font-size:10.5px; color:var(--tx-dim); margin-top:2px;}
+fieldset.gruppo legend{font-family:var(--font-display); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); padding:0 6px;}
+.nota-campo{font-size:11.5px; color:var(--tx-dim); margin-top:3px;}
 .pillola-null{display:inline-block; font-size:10px; color:var(--missing); background:var(--missing-fill); padding:1px 6px; border-radius:8px; margin-left:6px; font-weight:700;}
 
 .btn{
   background:var(--bg-4); border:1px solid var(--bd-strong); color:var(--tx-hi);
-  padding:8px 12px; border-radius:var(--radius); font-size:12.5px; font-weight:600;
+  padding:10px 14px; border-radius:var(--radius); font-size:14.5px; font-weight:600;
 }
 .btn:hover{border-color:var(--accent);}
 .btn.primario{background:var(--accent); color:#04202f; border-color:var(--accent);}
 .btn.pericolo{background:var(--danger-fill); color:var(--danger); border-color:var(--danger);}
-.btn.piccolo{padding:5px 8px; font-size:11px;}
+.btn.piccolo{padding:6px 10px; font-size:12.5px;}
 .riga-btn{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
 
 /* ---------- liste (elenchi generici) ---------- */
@@ -236,8 +236,8 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-s
 .elenco-riga.selezionata{border-color:var(--accent); background:var(--bg-3);}
 .elenco-riga .tag-colore{width:10px; height:10px; border-radius:2px; flex:0 0 auto;}
 .elenco-riga .elenco-testo{flex:1 1 auto; min-width:0;}
-.elenco-riga .elenco-titolo{font-size:12.5px; font-weight:600; color:var(--tx-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.elenco-riga .elenco-sub{font-size:10.5px; color:var(--tx-dim); font-family:var(--font-mono);}
+.elenco-riga .elenco-titolo{font-size:14.5px; font-weight:600; color:var(--tx-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.elenco-riga .elenco-sub{font-size:12px; color:var(--tx-dim); font-family:var(--font-mono);}
 .elenco-riga button{background:none; border:none; color:var(--tx-dim); font-size:15px; padding:2px 6px;}
 .elenco-riga button:hover{color:var(--danger);}
 
@@ -310,7 +310,7 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-s
 @media (max-width:980px){
   #brand span.sotto{display:none;}
   #menubar{gap:0;}
-  .menu-btn{padding:8px 7px; font-size:11.5px;}
+  .menu-btn{padding:9px 9px; font-size:13.5px;}
 }
 @media (max-width:860px){
   #tree-panel, #props-panel{
@@ -326,7 +326,7 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-s
     display:flex; align-items:center; justify-content:center; width:32px; height:32px;
     background:var(--bg-4); border:1px solid var(--bd-strong); border-radius:var(--radius); color:var(--tx-hi); font-size:15px; margin-right:4px;
   }
-  .btn-grande{font-size:11px;}
+  .btn-grande{font-size:12.5px;}
 }
 </style>
 </head>
@@ -398,7 +398,7 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:11px; letter-s
 /* =====================================================================
    1. COSTANTI, STATI E UTILITÀ GENERICHE
    ===================================================================== */
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.3.0';
 const SCHEMA_VERSION = 1;
 
 // Vocabolario esiti — usare ESCLUSIVAMENTE queste stringhe per gli stati.
@@ -529,6 +529,18 @@ function creaUtensile(){
   };
 }
 
+// Volume di lavorazione: regione 3D dichiarata dall'utente entro cui si assume che la PUNTA
+// dell'utensile possa trovarsi durante l'operazione (in assenza di un percorso reale importato).
+// Quote rispetto a un'origine G54-G59, stessa convenzione XY dei pezzi (xMin<=xMax ecc.).
+function creaVolumeLavorazione(){
+  return {
+    id: uid('vol'), nome: null, origine: null,
+    xMin:null,xMax:null,yMin:null,yMax:null,zMin:null,zMax:null,
+    quotaSicurezza: null,   // quota Z (stesso riferimento) sopra la quale l'utensile è considerato ritratto/sicuro
+    note: ''
+  };
+}
+
 function creaProgettoVuoto(){
   const origini = {};
   CODICI_ORIGINE.forEach(c=> origini[c]=creaOrigine(c));
@@ -552,6 +564,7 @@ function creaProgettoVuoto(){
     attrezzature: [],
     origini,
     pezzi: [],
+    volumiLavorazione: [],
     utensile: null,
     fotoRiferimento: { dataUrl:null, nomeFile:null, opacita:0.55, visibile:false },
     ui: { vistaAttiva:'pianta', zoom:1, panX:0, panY:0, snapAttivo:false, grigliaVisibile:true, selezione:null, wizardCompletato:false }
@@ -738,7 +751,7 @@ Motore._rettangoloTavola = function(m){
 
 function nuovaAnomalia(campi){
   return Object.assign({
-    id: uid('an'), tipo:'', titolo:'', gravita: STATI.AVVISO, oggetti:[], origineAttiva:null,
+    id: uid('an'), tipo:'', titolo:'', gravita: STATI.AVVISO, categoria:'statico', oggetti:[], origineAttiva:null,
     coordMacchina:[], coordPezzo:[], asse:null, distanzaOPenetrazione:null, margineRichiesto:null,
     descrizione:'', correzionePossibile:''
   }, campi);
@@ -785,6 +798,175 @@ function confrontaVolumi(descA, volA, descB, volB, margine, tipoBase, contesto){
       : 'Aumentare la distanza tra gli elementi oppure ridurre il margine di sicurezza richiesto se coerente con le reali esigenze di lavorazione.'
   });
 }
+
+// Costruisce i 3 volumi conservativi "spazzati" (parte tagliente, codolo, portautensile) a
+// partire da un volume di lavorazione dichiarato e dai dati utensile. IPOTESI CONSERVATIVA:
+// in assenza di un percorso reale, si assume che la PUNTA utensile possa trovarsi in un punto
+// qualsiasi entro le quote X/Y/Z del volume dichiarato. Il volume realmente spazzato da un
+// percorso vero è un SOTTOINSIEME di questo: il metodo non produce mai un falso negativo,
+// ma può segnalare interferenze che un percorso reale più stretto non incontrerebbe davvero.
+// Il volume non ruota con l'origine/pezzo (stessa limitazione dichiarata in AIUTO).
+Motore._volumiUtensileSpazzati = function(volume, utensile, origine){
+  if(!volume || !utensile || !origine) return null;
+  if(!tuttiNum(volume.xMin,volume.xMax,volume.yMin,volume.yMax,volume.zMin,volume.zMax)) return null;
+  if(!tuttiNum(origine.x,origine.y,origine.z)) return null;
+  if(!tuttiNum(utensile.diametroFresa, utensile.lunghezzaTagliente, utensile.diametroCodolo,
+               utensile.lunghezzaCodolo, utensile.diametroPortautensile, utensile.lunghezzaPortautensile)) return null;
+
+  const xMinMcs = origine.x + volume.xMin, xMaxMcs = origine.x + volume.xMax;
+  const yMinMcs = origine.y + volume.yMin, yMaxMcs = origine.y + volume.yMax;
+  const zMinPunta = origine.z + volume.zMin, zMaxPunta = origine.z + volume.zMax;
+  const cx = (xMinMcs+xMaxMcs)/2, cy = (yMinMcs+yMaxMcs)/2;
+  const semiX0 = Math.abs(xMaxMcs-xMinMcs)/2, semiY0 = Math.abs(yMaxMcs-yMinMcs)/2;
+
+  const mR = isNum(utensile.margineRadiale) ? utensile.margineRadiale : 0;
+  const mA = isNum(utensile.margineAssiale) ? utensile.margineAssiale : 0;
+
+  function segmento(raggio, zMinSeg, zMaxSeg){
+    const r = raggio + mR;
+    return { corners: Geo.verticiOBB(cx, cy, semiX0+r, semiY0+r, 0), cx, cy, zMin: zMinSeg-mA, zMax: zMaxSeg+mA };
+  }
+
+  const fresa = segmento(utensile.diametroFresa/2, zMinPunta, zMaxPunta+utensile.lunghezzaTagliente);
+  const zCodoloMin = zMinPunta+utensile.lunghezzaTagliente, zCodoloMax = zMaxPunta+utensile.lunghezzaTagliente+utensile.lunghezzaCodolo;
+  const codolo = segmento(utensile.diametroCodolo/2, zCodoloMin, zCodoloMax);
+  const zPortaMin = zCodoloMin+utensile.lunghezzaCodolo, zPortaMax = zCodoloMax+utensile.lunghezzaPortautensile;
+  const portautensile = segmento(utensile.diametroPortautensile/2, zPortaMin, zPortaMax);
+
+  return { fresa, codolo, portautensile, zMinPunta, zMaxPunta };
+};
+
+// Esegue il controllo dinamico su tutti i volumi di lavorazione configurati.
+// Ritorna { stato: 'non_configurato'|'dati_incompleti'|'parziale'|'eseguibile', anomalie[], note[] }.
+Motore._controlliDinamici = function(progetto){
+  const ut = progetto.utensile;
+  const utensileCompleto = !!ut && tuttiNum(ut.diametroFresa, ut.lunghezzaTagliente, ut.diametroCodolo,
+    ut.lunghezzaCodolo, ut.diametroPortautensile, ut.lunghezzaPortautensile);
+  const volumi = progetto.volumiLavorazione || [];
+
+  if(volumi.length===0 && !utensileCompleto){
+    return { stato:'non_configurato', anomalie:[],
+      note:['Controllo dinamico utensile/volume di lavorazione: NON CONFIGURATO (nessun volume di lavorazione inserito, dati utensile mancanti). Non influisce sullo stato statico.'] };
+  }
+
+  const pezzoAttivo = progetto.pezzi.find(p=>p.ruolo==='lavorato') || null;
+  const anomalieDinamiche = [];
+
+  if(utensileCompleto && isNum(ut.sporgenzaTotale)){
+    const sommaSegmenti = ut.lunghezzaTagliente + ut.lunghezzaCodolo;
+    const scarto = Math.abs(ut.sporgenzaTotale - sommaSegmenti);
+    if(scarto > 1){ // oltre 1mm di scarto: solo un avviso informativo, non usato per correggere la geometria
+      anomalieDinamiche.push(nuovaAnomalia({ tipo:'SPORGENZA_INCOERENTE', categoria:'dinamico',
+        titolo:'Sporgenza totale non coerente con tagliente+codolo', gravita: STATI.AVVISO,
+        oggetti:[{tipo:'utensile',id:'utensile',nome:ut.nome||'Utensile'}],
+        descrizione:'Sporgenza totale dichiarata ('+fmtMm(ut.sporgenzaTotale)+') differisce di '+fmtMm(scarto)+' dalla somma di lunghezza tagliente e codolo ('+fmtMm(sommaSegmenti)+'). La geometria usata nei calcoli resta quella dei campi espliciti (tagliente/codolo/portautensile): questo è solo un promemoria di coerenza.',
+        correzionePossibile:'Verificare le misure con un preset utensile o correggere il campo non coerente.' }));
+    }
+  }
+
+  let almenoUnoEseguito = false, almenoUnoIncompleto = false;
+
+  volumi.forEach(vol=>{
+    const origine = vol.origine ? progetto.origini[vol.origine] : null;
+    const geomOk = tuttiNum(vol.xMin,vol.xMax,vol.yMin,vol.yMax,vol.zMin,vol.zMax) && isNum(vol.quotaSicurezza)
+      && origine && tuttiNum(origine.x,origine.y,origine.z);
+    if(!geomOk || !utensileCompleto){ almenoUnoIncompleto = true; return; }
+    const spazzati = Motore._volumiUtensileSpazzati(vol, ut, origine);
+    if(!spazzati){ almenoUnoIncompleto = true; return; }
+    almenoUnoEseguito = true;
+
+    if(vol.quotaSicurezza <= vol.zMax){
+      anomalieDinamiche.push(nuovaAnomalia({ tipo:'QUOTA_SICUREZZA_INCOERENTE', categoria:'dinamico',
+        titolo:'Quota di sicurezza incoerente: '+(vol.nome||vol.id), gravita: STATI.AVVISO,
+        oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}], origineAttiva: vol.origine, asse:'Z',
+        descrizione:'La quota di sicurezza dichiarata ('+fmtMm(vol.quotaSicurezza)+') non è superiore alla quota massima del volume di lavorazione ('+fmtMm(vol.zMax)+'): dovrebbe essere un piano di ritorno sopra l\'intera zona.',
+        correzionePossibile:'Aumentare la quota di sicurezza oppure controllare le quote Z del volume.' }));
+    }
+    if(pezzoAttivo && pezzoAttivo.origine===vol.origine && isNum(pezzoAttivo.rotazione) && Math.abs(pezzoAttivo.rotazione)>1e-9){
+      anomalieDinamiche.push(nuovaAnomalia({ tipo:'VOLUME_RUOTATO_NON_CONSIDERATO', categoria:'dinamico',
+        titolo:'Rotazione pezzo non applicata al volume: '+(vol.nome||vol.id), gravita: STATI.AVVISO,
+        oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'},{tipo:'pezzo',id:pezzoAttivo.id,nome:pezzoAttivo.nome||'(senza nome)'}],
+        origineAttiva: vol.origine,
+        descrizione:'Il pezzo attivo su questa origine ha rotazione '+formattaNumero(pezzoAttivo.rotazione,2)+'°, ma il volume di lavorazione resta allineato agli assi macchina.',
+        correzionePossibile:'Definire il volume già tenendo conto della rotazione, oppure lasciare un margine più ampio.' }));
+    }
+
+    if(Motore._corseComplete(progetto.macchina)){
+      const corse = progetto.macchina.corse;
+      const rett = {xMin:corse.xMin,xMax:corse.xMax,yMin:corse.yMin,yMax:corse.yMax};
+      const zFuoriPunta = (spazzati.zMinPunta < corse.zMin-1e-9) || (spazzati.zMaxPunta > corse.zMax+1e-9);
+      if(zFuoriPunta){
+        anomalieDinamiche.push(nuovaAnomalia({ tipo:'UTENSILE_FUORI_CORSE', categoria:'dinamico',
+          titolo:'Punta utensile oltre la corsa Z: '+(vol.nome||vol.id), gravita: STATI.COLLISIONE,
+          oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}], origineAttiva: vol.origine, asse:'Z',
+          descrizione:'Il range Z dichiarato per la punta utensile (da '+fmtMm(spazzati.zMinPunta)+' a '+fmtMm(spazzati.zMaxPunta)+') supera la corsa Z della macchina.',
+          correzionePossibile:'Verificare la quota Z del volume di lavorazione, dell\'origine o le corse macchina.' }));
+      }
+      ['fresa','codolo','portautensile'].forEach(seg=>{
+        const v = spazzati[seg];
+        const c = Geo.contenutoInRettangolo(v.corners, rett);
+        if(c && !c.contenuto){
+          const assiXY = Object.entries(c.sporgenze).filter(([k,val])=>val>1e-9).map(([k])=>k);
+          anomalieDinamiche.push(nuovaAnomalia({ tipo:'UTENSILE_FUORI_CORSE', categoria:'dinamico',
+            titolo:'Utensile ('+seg+') oltre le corse in pianta: '+(vol.nome||vol.id), gravita: STATI.COLLISIONE,
+            oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}], origineAttiva: vol.origine, asse: assiXY.join(','),
+            descrizione:'L\'ingombro in pianta del segmento "'+seg+'" (raggio utensile'+(isNum(ut.margineRadiale)?'+margine radiale':'')+') supera le corse macchina sugli assi: '+assiXY.join(', ')+'.',
+            correzionePossibile:'Ridurre il volume di lavorazione o verificare corse/origine.' }));
+        }
+      });
+    }
+
+    progetto.pezzi.forEach(p=>{
+      const o2 = p.origine ? progetto.origini[p.origine] : null;
+      const obbP = o2 ? Geo.obbPezzo(p, o2) : null;
+      if(!obbP) return;
+      const eAttivo = !!(pezzoAttivo && p.id===pezzoAttivo.id);
+      if(!eAttivo){
+        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:'Parte tagliente — '+(vol.nome||vol.id)}, spazzati.fresa,
+          {tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}, obbP, 0, 'UTENSILE_CONTRO_OSTACOLO', {origineAttiva:vol.origine});
+        if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
+      }
+      ['codolo','portautensile'].forEach(seg=>{
+        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:(seg==='codolo'?'Codolo':'Portautensile')+' — '+(vol.nome||vol.id)}, spazzati[seg],
+          {tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}, obbP, 0, seg==='codolo'?'CODOLO_CONTRO_OGGETTO':'PORTAUTENSILE_CONTRO_OGGETTO', {origineAttiva:vol.origine});
+        if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
+      });
+      if(eAttivo && isNum(obbP.zMin) && spazzati.fresa.zMin < obbP.zMin-1e-9){
+        anomalieDinamiche.push(nuovaAnomalia({ tipo:'PENETRAZIONE_SOTTO_PEZZO', categoria:'dinamico',
+          titolo:'Penetrazione sotto la base del pezzo: '+(p.nome||p.id), gravita: STATI.COLLISIONE,
+          oggetti:[{tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'},{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}],
+          origineAttiva: vol.origine, asse:'Z', distanzaOPenetrazione: obbP.zMin-spazzati.fresa.zMin,
+          descrizione:'La quota minima del volume di lavorazione ('+fmtMm(spazzati.fresa.zMin)+') scende sotto la base del pezzo attivo ('+fmtMm(obbP.zMin)+') di '+fmtMm(obbP.zMin-spazzati.fresa.zMin)+'.',
+          correzionePossibile:'Verificare la quota Z minima del volume di lavorazione o del pezzo.' }));
+      }
+    });
+
+    progetto.attrezzature.forEach(a=>{
+      const obbA = Geo.obbAttrezzatura(a);
+      if(!obbA) return;
+      ['fresa','codolo','portautensile'].forEach(seg=>{
+        const tipoAn = seg==='fresa' ? 'UTENSILE_CONTRO_OSTACOLO' : (seg==='codolo'?'CODOLO_CONTRO_OGGETTO':'PORTAUTENSILE_CONTRO_OGGETTO');
+        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:(seg==='fresa'?'Parte tagliente':seg==='codolo'?'Codolo':'Portautensile')+' — '+(vol.nome||vol.id)}, spazzati[seg],
+          {tipo:'attrezzatura',id:a.id,nome:a.nome||'(senza nome)'}, obbA, 0, tipoAn, {origineAttiva:vol.origine});
+        if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
+      });
+    });
+  });
+
+  let stato;
+  if(!almenoUnoEseguito && !almenoUnoIncompleto) stato='non_configurato';
+  else if(!almenoUnoEseguito) stato='dati_incompleti';
+  else if(almenoUnoIncompleto) stato='parziale';
+  else stato='eseguibile';
+
+  const note = [];
+  if(stato==='non_configurato') note.push('Controllo dinamico utensile/volume di lavorazione: NON CONFIGURATO. Non influisce sullo stato statico qui sopra.');
+  else if(stato==='dati_incompleti') note.push('Controllo dinamico: DATI INCOMPLETI — completare utensile e le quote/quota di sicurezza di ogni volume di lavorazione per eseguirlo.');
+  else if(stato==='parziale') note.push('Controllo dinamico: eseguito solo per i volumi di lavorazione con dati completi; almeno un volume resta con dati incompleti.');
+  else note.push('Controllo dinamico eseguito con il modello conservativo "punta ovunque nel volume dichiarato" — vedi AIUTO per il significato esatto e i limiti del metodo.');
+
+  return { stato, anomalie: anomalieDinamiche, note };
+};
 
 Motore.eseguiControlli = function(progetto){
   const m = progetto.macchina;
@@ -993,6 +1175,13 @@ Motore.eseguiControlli = function(progetto){
     });
   });
 
+  // CAT 10: controllo dinamico utensile / volume di lavorazione
+  const risultatoDinamico = Motore._controlliDinamici(progetto);
+  anomalie.push(...risultatoDinamico.anomalie);
+  if(risultatoDinamico.stato==='dati_incompleti' || risultatoDinamico.stato==='parziale'){
+    catStati.dinamico = STATI.DATI_INCOMPLETI;
+  }
+
   // Rollup stato globale (ordine di priorità dal più al meno urgente)
   const presenti = new Set(anomalie.map(a=>a.gravita));
   Object.values(catStati).forEach(s=>presenti.add(s));
@@ -1005,15 +1194,15 @@ Motore.eseguiControlli = function(progetto){
   else if(presenti.has(STATI.NON_CONFIGURATO)) globale = STATI.NON_CONFIGURATO;
   else globale = STATI.OK;
 
-  return { globale, anomalie, catStati, contatori:{
+  return { globale, anomalie, catStati, dinamico: risultatoDinamico.stato, contatori:{
     collisioni: anomalie.filter(a=>a.gravita===STATI.COLLISIONE).length,
     margini: anomalie.filter(a=>a.gravita===STATI.MARGINE_INSUFFICIENTE).length,
     incompleti: anomalie.filter(a=>a.gravita===STATI.DATI_INCOMPLETI||a.gravita===STATI.NON_CONFIGURATO).length
-  }, note:[ 'Controllo dinamico utensile/percorso: NON ESEGUITO (funzionalità non disponibile in questa versione dell\'app).' ] };
+  }, note: risultatoDinamico.note };
 };
 
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { Geo, Motore, creaOrigine, creaAttrezzatura, creaPezzo, creaUtensile, creaZonaVietata, creaProgettoVuoto, parseNumeroIt, STATI, isNum, CODICI_ORIGINE };
+  module.exports = { Geo, Motore, creaOrigine, creaAttrezzatura, creaPezzo, creaUtensile, creaZonaVietata, creaVolumeLavorazione, creaProgettoVuoto, parseNumeroIt, STATI, isNum, CODICI_ORIGINE };
 }
 /* ===== FINE MODULO PURO (Geo + Motore + modello dati) — testabile in Node ===== */
 
@@ -1242,6 +1431,7 @@ const COLORI = {
   danger:'#ef4444', dangerFill:'rgba(239,68,68,.26)',
   warn:'#f5a524', warnFill:'rgba(245,165,36,.24)',
   missing:'#38bdf8', missingFill:'rgba(56,189,248,.16)',
+  volume:'#ec4899', volumeFill:'rgba(236,72,153,.10)',
   accent:'#38bdf8'
 };
 const NS_SVG = 'http://www.w3.org/2000/svg';
@@ -1275,6 +1465,20 @@ function calcolaCamera(){
   svg.setAttribute('width',w); svg.setAttribute('height',h);
 
   const m = progetto.macchina;
+  const vista = progetto.ui.vistaAttiva;
+
+  if(vista==='laterale' || vista==='frontale'){
+    if(!Motore._corseComplete(m)){ Vista.camera = {scalaBase:1, offsetX:w/2, offsetY:h/2}; return; }
+    const asse = vista==='laterale' ? 'x' : 'y';
+    const hMin = asse==='x'?m.corse.xMin:m.corse.yMin, hMax = asse==='x'?m.corse.xMax:m.corse.yMax;
+    const zMin = m.corse.zMin, zMax = m.corse.zMax;
+    const pad = 46;
+    const scalaX = (w-2*pad)/Math.max(Math.abs(hMax-hMin),1), scalaY = (h-2*pad)/Math.max(Math.abs(zMax-zMin),1);
+    const scalaBase = Math.max(Math.min(scalaX,scalaY), 0.0005);
+    Vista.camera = { scalaBase, offsetX: w/2 - (hMin+hMax)/2*scalaBase, offsetY: h/2 + (zMin+zMax)/2*scalaBase };
+    return;
+  }
+
   if(!Motore._tavolaCompleta(m)){ Vista.camera = {scalaBase:1, offsetX:w/2, offsetY:h/2}; return; }
   const r = Motore._rettangoloTavola(m);
   const angoli = [[r.xMin,r.yMin],[r.xMax,r.yMin],[r.xMax,r.yMax],[r.xMin,r.yMax]].map(([x,y])=>mmALocale(x,y));
@@ -1289,6 +1493,118 @@ function calcolaCamera(){
     offsetY: h/2 - (locYMin+locYMax)/2*scalaBase
   };
 }
+
+// Mappatura mm->locale per le viste proiettate (laterale/frontale): asse orizzontale invariato
+// (nessun invertiX/invertiY, che ha senso solo per la pianta), Z invertita per leggere "più in
+// alto sullo schermo = quota maggiore".
+function mmALocaleProiezione(hMm, zMm){ return { x:hMm, y:-zMm }; }
+function assePerVista(nomeVista){ return nomeVista==='laterale' ? 'x' : 'y'; }
+
+function disegnaBadgeAnomaliaProiezione(parent, hMm, zMm, colore){
+  const l = mmALocaleProiezione(hMm,zMm); const sc=effettivaScala(); const r=7/sc;
+  const g = elSvg('g');
+  g.appendChild(elSvg('circle',{cx:l.x,cy:l.y,r,fill:colore,stroke:'#1a1206','stroke-width':1/sc}));
+  const t = elSvg('text',{x:l.x,y:l.y+3.2/sc,'text-anchor':'middle','font-size':(10/sc)+'px','font-weight':'800',fill:'#151515'});
+  t.textContent='!'; g.appendChild(t);
+  parent.appendChild(g);
+}
+
+function disegnaProiezione(nomeVista){
+  const svg = document.getElementById('stage');
+  svg.innerHTML='';
+  const placeholder = document.getElementById('vista-placeholder');
+  const m = progetto.macchina;
+  if(!Motore._corseComplete(m)){
+    placeholder.classList.remove('hidden');
+    placeholder.innerHTML = '<div><b>CORSE MACCHINA NON CONFIGURATE</b></div><div>Vai su MACCHINA per inserire le corse X/Y/Z: questa vista usa l\u2019inviluppo delle corse come riferimento verticale.</div>';
+    return;
+  }
+  placeholder.classList.add('hidden');
+
+  const camera = elSvg('g', {id:'camera', transform: cameraTransform()});
+  svg.appendChild(camera);
+
+  const asse = assePerVista(nomeVista);
+  const sc = effettivaScala();
+
+  function poligonoProiezione(hMinO,hMaxO,zMinO,zMaxO,opz){
+    opz = opz||{};
+    const pts = [[hMinO,zMinO],[hMaxO,zMinO],[hMaxO,zMaxO],[hMinO,zMaxO]].map(([hh,zz])=>{ const l=mmALocaleProiezione(hh,zz); return l.x.toFixed(3)+','+l.y.toFixed(3); }).join(' ');
+    const p = elSvg('polygon', {
+      points:pts, fill:opz.fill||'none', stroke:opz.stroke||'#888',
+      'stroke-width':(opz.strokeWidth!==undefined?opz.strokeWidth:1.6)/sc,
+      'stroke-dasharray': opz.dash? opz.dash.split(',').map(n=>(+n)/sc).join(','):'',
+      'data-tipo':opz.tipo||'', 'data-id':opz.id||'', class:opz.classe||''
+    });
+    camera.appendChild(p);
+    return p;
+  }
+
+  const hMin = asse==='x'?m.corse.xMin:m.corse.yMin, hMax = asse==='x'?m.corse.xMax:m.corse.yMax;
+  poligonoProiezione(hMin,hMax,m.corse.zMin,m.corse.zMax,{stroke:'#3a4257', dash:'4,4', strokeWidth:1});
+
+  if(Motore._tavolaCompleta(m) && isNum(m.tavola.posizione.z) && isNum(m.tavola.quotaSuperiore) && m.tavola.quotaSuperiore>m.tavola.posizione.z){
+    const rTav = Motore._rettangoloTavola(m);
+    const hMinTav = asse==='x'?rTav.xMin:rTav.yMin, hMaxTav = asse==='x'?rTav.xMax:rTav.yMax;
+    poligonoProiezione(hMinTav,hMaxTav,m.tavola.posizione.z,m.tavola.quotaSuperiore,{fill:COLORI.steelFill, stroke:COLORI.steel, strokeWidth:1.6});
+  }
+
+  const gravita = graviteOggettiDaAnomalie();
+  const sel = progetto.ui.selezione;
+
+  function disegnaProiettato(obb, tipo, id, coloreBase){
+    if(!obb || !isNum(obb.zMin) || !isNum(obb.zMax)) return;
+    const vals = obb.corners.map(c=>c[asse]);
+    const hLo = Math.min(...vals), hHi = Math.max(...vals);
+    const grav = gravita.get(tipo+':'+id);
+    const stroke = grav===STATI.COLLISIONE?COLORI.danger : grav===STATI.MARGINE_INSUFFICIENTE?COLORI.warn : coloreBase.stroke;
+    const poly = poligonoProiezione(hLo,hHi,obb.zMin,obb.zMax,{fill:coloreBase.fill, stroke, strokeWidth:grav?3:1.6, dash:grav===STATI.MARGINE_INSUFFICIENTE?'6,4':'', tipo, id, classe:'selezionabile'});
+    if(sel && sel.tipo===tipo && sel.id===id) poly.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    if(grav) disegnaBadgeAnomaliaProiezione(camera, hLo, obb.zMax, grav===STATI.COLLISIONE?COLORI.danger:COLORI.warn);
+  }
+
+  progetto.attrezzature.forEach(a=>{
+    const base = a.tipo==='piano_magnetico' ? {fill:COLORI.plateFill,stroke:COLORI.plate}
+      : a.tipo==='morsa' ? {fill:COLORI.viseFill,stroke:COLORI.vise} : {fill:COLORI.steelFill,stroke:COLORI.steel};
+    disegnaProiettato(Geo.obbAttrezzatura(a), 'attrezzatura', a.id, base);
+  });
+  progetto.pezzi.forEach(p=>{
+    const origine = p.origine ? progetto.origini[p.origine] : null;
+    const obb = origine ? Geo.obbPezzo(p, origine) : null;
+    const base = p.ruolo==='lavorato' ? {fill:COLORI.activeFill,stroke:COLORI.active} : {fill:COLORI.pieceFill,stroke:COLORI.piece};
+    disegnaProiettato(obb, 'pezzo', p.id, base);
+  });
+  progetto.volumiLavorazione.forEach(vol=>{
+    const origineVol = vol.origine ? progetto.origini[vol.origine] : null;
+    if(!origineVol || !tuttiNum(origineVol.x,origineVol.y) || !tuttiNum(vol.xMin,vol.xMax,vol.yMin,vol.yMax,vol.zMin,vol.zMax)) return;
+    const xMinMcs=origineVol.x+vol.xMin, xMaxMcs=origineVol.x+vol.xMax, yMinMcs=origineVol.y+vol.yMin, yMaxMcs=origineVol.y+vol.yMax;
+    const obbFinto = { corners:[{x:xMinMcs,y:yMinMcs},{x:xMaxMcs,y:yMinMcs},{x:xMaxMcs,y:yMaxMcs},{x:xMinMcs,y:yMaxMcs}], zMin:vol.zMin+origineVol.z, zMax:vol.zMax+origineVol.z };
+    disegnaProiettato(obbFinto, 'volume', vol.id, {fill:COLORI.volumeFill, stroke:COLORI.volume});
+  });
+
+  CODICI_ORIGINE.forEach(codice=>{
+    const o = progetto.origini[codice];
+    if(progetto.ui.origHidden) return;
+    const hVal = asse==='x'?o.x:o.y;
+    if(!tuttiNum(hVal,o.z)) return;
+    const l = mmALocaleProiezione(hVal,o.z); const d=11/sc;
+    const g = elSvg('g',{'data-tipo':'origine','data-id':codice, opacity:o.attiva?1:0.35, class:'selezionabile'});
+    g.appendChild(elSvg('line',{x1:l.x-d,y1:l.y,x2:l.x+d,y2:l.y, stroke:o.colore,'stroke-width':2/sc}));
+    g.appendChild(elSvg('line',{x1:l.x,y1:l.y-d,x2:l.x,y2:l.y+d, stroke:o.colore,'stroke-width':2/sc}));
+    const t = elSvg('text',{x:l.x+d+3/sc,y:l.y-3/sc, fill:o.colore,'font-size':(10.5/sc)+'px','font-weight':'700'});
+    t.textContent=codice; g.appendChild(t);
+    if(sel && sel.tipo==='origine' && sel.id===codice) g.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    camera.appendChild(g);
+  });
+}
+
+function ricalcolaEDisegnaPianta(){ calcolaCamera(); disegnaContenutoSvg(); }
+function ridisegnaVistaCorrente(){
+  const v = progetto.ui.vistaAttiva;
+  if(v==='pianta') disegnaContenutoSvg();
+  else if(v==='laterale' || v==='frontale') disegnaProiezione(v);
+}
+function ricalcolaERidisegnaVistaCorrente(){ calcolaCamera(); ridisegnaVistaCorrente(); }
 
 function graviteOggettiDaAnomalie(){
   const mappa = new Map(); // "tipo:id" -> STATI.* (peggiore)
@@ -1372,6 +1688,18 @@ function disegnaContenutoSvg(){
   const gravita = graviteOggettiDaAnomalie();
   const sel = progetto.ui.selezione;
 
+  progetto.volumiLavorazione.forEach(vol=>{
+    const origineVol = vol.origine ? progetto.origini[vol.origine] : null;
+    if(!origineVol || !tuttiNum(origineVol.x,origineVol.y) || !tuttiNum(vol.xMin,vol.xMax,vol.yMin,vol.yMax)) return;
+    const xMinMcs=origineVol.x+vol.xMin, xMaxMcs=origineVol.x+vol.xMax, yMinMcs=origineVol.y+vol.yMin, yMaxMcs=origineVol.y+vol.yMax;
+    const cornersVol = [{x:xMinMcs,y:yMinMcs},{x:xMaxMcs,y:yMinMcs},{x:xMaxMcs,y:yMaxMcs},{x:xMinMcs,y:yMaxMcs}];
+    const grav = gravita.get('volume:'+vol.id);
+    const stroke = grav===STATI.COLLISIONE ? COLORI.danger : grav===STATI.MARGINE_INSUFFICIENTE ? COLORI.warn : COLORI.volume;
+    const poly = disegnaPoligonoMm(camera, cornersVol, {fill:COLORI.volumeFill, stroke, dash:'5,3', strokeWidth: grav?3:1.6, tipo:'volume', id:vol.id, classe:'selezionabile'});
+    if(sel && sel.tipo==='volume' && sel.id===vol.id) poly.setAttribute('filter','drop-shadow(0 0 4px '+COLORI.accent+')');
+    if(grav) disegnaBadgeAnomalia(camera, cornersVol, grav===STATI.COLLISIONE?COLORI.danger:COLORI.warn);
+  });
+
   progetto.attrezzature.forEach(a=>{
     const obb = Geo.obbAttrezzatura(a);
     if(!obb) return;
@@ -1430,13 +1758,15 @@ function disegnaContenutoSvg(){
   });
 }
 
-function ricalcolaEDisegnaPianta(){ calcolaCamera(); disegnaContenutoSvg(); }
-
 function mostraVista(nome){
+  const cambiaVista = progetto.ui.vistaAttiva !== nome;
   progetto.ui.vistaAttiva = nome;
-  document.getElementById('svg-host').classList.toggle('hidden', nome!=='pianta');
+  if(cambiaVista){ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; }
+  const usaSvg = (nome==='pianta' || nome==='laterale' || nome==='frontale');
+  document.getElementById('svg-host').classList.toggle('hidden', !usaSvg);
   document.getElementById('foto-host').classList.toggle('hidden', nome!=='foto');
-  if(nome==='pianta') ricalcolaEDisegnaPianta();
+  if(nome==='pianta'){ calcolaCamera(); disegnaContenutoSvg(); }
+  else if(nome==='laterale' || nome==='frontale'){ calcolaCamera(); disegnaProiezione(nome); }
   if(nome==='foto') renderVistaFoto();
   renderTabsVista();
   renderToolbarCanvas();
@@ -1484,7 +1814,7 @@ function inizializzaInterazioneSvg(){
   svg.addEventListener('pointerup', onSvgPointerUp);
   svg.addEventListener('pointercancel', onSvgPointerUp);
   svg.addEventListener('wheel', onSvgWheel, {passive:false});
-  window.addEventListener('resize', debounce(()=>{ if(progetto.ui.vistaAttiva==='pianta') ricalcolaEDisegnaPianta(); }, 150));
+  window.addEventListener('resize', debounce(()=>{ if(['pianta','laterale','frontale'].includes(progetto.ui.vistaAttiva)) ricalcolaERidisegnaVistaCorrente(); }, 150));
 }
 
 function onSvgPointerDown(e){
@@ -1498,15 +1828,18 @@ function onSvgPointerDown(e){
     return;
   }
   const target = e.target.closest('[data-tipo]');
-  if(target && target.dataset.tipo==='attrezzatura'){
+  const inPianta = progetto.ui.vistaAttiva==='pianta';
+  if(inPianta && target && target.dataset.tipo==='attrezzatura'){
     const obj = trovaOggetto('attrezzatura', target.dataset.id);
     selezionaOggetto('attrezzatura', target.dataset.id);
     trascinamento = { tipo:'attrezzatura', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY), xIniziale:obj.x, yIniziale:obj.y };
-  } else if(target && target.dataset.tipo==='pezzo'){
+  } else if(inPianta && target && target.dataset.tipo==='pezzo'){
     const obj = trovaOggetto('pezzo', target.dataset.id);
     selezionaOggetto('pezzo', target.dataset.id);
     trascinamento = { tipo:'pezzo', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY),
       xMinI:obj.xMin, xMaxI:obj.xMax, yMinI:obj.yMin, yMaxI:obj.yMax };
+  } else if(target && (target.dataset.tipo==='attrezzatura' || target.dataset.tipo==='pezzo' || target.dataset.tipo==='volume')){
+    selezionaOggetto(target.dataset.tipo, target.dataset.id);
   } else if(target && target.dataset.tipo==='origine'){
     selezionaOggetto('origine', target.dataset.id);
   } else {
@@ -1521,7 +1854,7 @@ function onSvgPointerMove(e){
     const pts=[...puntatoriAttivi.values()];
     const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
     progetto.ui.zoom = clampZoom(pinch.zoomIniziale*(dist/pinch.distIniziale));
-    disegnaContenutoSvg();
+    ridisegnaVistaCorrente();
     return;
   }
   if(trascinamento){
@@ -1547,7 +1880,7 @@ function onSvgPointerMove(e){
   if(panInCorso){
     progetto.ui.panX = panInCorso.panX0 + (e.clientX-panInCorso.startX);
     progetto.ui.panY = panInCorso.panY0 + (e.clientY-panInCorso.startY);
-    disegnaContenutoSvg();
+    ridisegnaVistaCorrente();
   }
 }
 function onSvgPointerUp(e){
@@ -1559,7 +1892,7 @@ function onSvgPointerUp(e){
 function onSvgWheel(e){
   e.preventDefault();
   progetto.ui.zoom = clampZoom(progetto.ui.zoom*(e.deltaY<0?1.12:0.89));
-  disegnaContenutoSvg();
+  ridisegnaVistaCorrente();
 }
 
 function esportaRapportoTxt(){
@@ -1668,7 +2001,7 @@ function campoColore(container, obj, path, label){
   const div=document.createElement('div'); div.className='campo';
   const lab=document.createElement('label'); lab.textContent=label; div.appendChild(lab);
   const input=document.createElement('input'); input.type='color'; input.value=getPath(obj,path)||'#64748b';
-  input.addEventListener('change',()=>{ setPath(obj,path,input.value); segnaModificato(); disegnaContenutoSvg(); });
+  input.addEventListener('change',()=>{ setPath(obj,path,input.value); segnaModificato(); });
   div.appendChild(input); container.appendChild(div);
 }
 function renderElenco(container, items, opz){
@@ -1726,15 +2059,18 @@ function renderMenubar(){
     {nome:'Origini', azioni:[
       ...CODICI_ORIGINE.map(c=>({label:'Gestisci '+c, fn:()=>selezionaOggetto('origine',c)})),
       {sep:true},
-      {label:(progetto.ui.origHidden?'Mostra origini':'Nascondi origini'), fn:()=>{ progetto.ui.origHidden=!progetto.ui.origHidden; disegnaContenutoSvg(); }}
+      {label:(progetto.ui.origHidden?'Mostra origini':'Nascondi origini'), fn:()=>{ progetto.ui.origHidden=!progetto.ui.origHidden; ridisegnaVistaCorrente(); }}
     ]},
     {nome:'Pezzi', azioni:[{label:'Gestisci pezzi', fn:apriElencoPezzi}]},
-    {nome:'Utensile', azioni:[{label:'Dati utensile e portautensile', fn:()=>selezionaOggetto('utensile','unico')}]},
+    {nome:'Utensile', azioni:[
+      {label:'Dati utensile e portautensile', fn:()=>selezionaOggetto('utensile','unico')},
+      {label:'Gestisci volumi di lavorazione', fn:apriElencoVolumi}
+    ]},
     {nome:'Vista', azioni:[
       {label:'Vista pianta (XY)', fn:()=>mostraVista('pianta')},
       {label:'Vista foto di riferimento', fn:()=>mostraVista('foto')},
       {sep:true},
-      {label:'Adatta alla finestra', fn:()=>{ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; ricalcolaEDisegnaPianta(); renderToolbarCanvas(); }},
+      {label:'Adatta alla finestra', fn:()=>{ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; ricalcolaERidisegnaVistaCorrente(); renderToolbarCanvas(); }},
       {label:(progetto.ui.grigliaVisibile?'Nascondi griglia':'Mostra griglia'), fn:()=>{ progetto.ui.grigliaVisibile=!progetto.ui.grigliaVisibile; disegnaContenutoSvg(); renderToolbarCanvas(); }},
       {label:(progetto.ui.snapAttivo?'Disattiva snap':'Attiva snap'), fn:()=>{ progetto.ui.snapAttivo=!progetto.ui.snapAttivo; renderToolbarCanvas(); }}
     ]},
@@ -1755,7 +2091,7 @@ function selezionaOggetto(tipo,id){
   if(tipo==='utensile' && !progetto.utensile) progetto.utensile = creaUtensile();
   progetto.ui.selezione={tipo,id};
   renderAlbero(); renderPannelloProprieta();
-  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+  ridisegnaVistaCorrente();
   if(window.innerWidth<=860){
     document.getElementById('props-panel').classList.add('aperto');
     document.getElementById('tree-panel').classList.remove('aperto');
@@ -1764,7 +2100,7 @@ function selezionaOggetto(tipo,id){
 }
 function deselezionaOggetto(){
   progetto.ui.selezione=null; renderAlbero(); renderPannelloProprieta();
-  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+  ridisegnaVistaCorrente();
 }
 function aggiornaPannelloProprietaSeSelezionato(){ if(progetto.ui.selezione) renderPannelloProprieta(); }
 
@@ -1803,6 +2139,13 @@ function renderAlbero(){
   });
   bAgg=document.createElement('button'); bAgg.className='albero-aggiungi'; bAgg.textContent='Gestisci pezzi'; bAgg.onclick=apriElencoPezzi; panel.appendChild(bAgg);
 
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Volumi di lavorazione'; panel.appendChild(t);
+  if(progetto.volumiLavorazione.length===0){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Nessun volume di lavorazione.'; panel.appendChild(v); }
+  progetto.volumiLavorazione.forEach(vl=>{
+    nodoAlbero(panel, sel&&sel.tipo==='volume'&&sel.id===vl.id, COLORI.volume, vl.nome||'(senza nome)', ()=>selezionaOggetto('volume',vl.id));
+  });
+  bAgg=document.createElement('button'); bAgg.className='albero-aggiungi'; bAgg.textContent='Gestisci volumi di lavorazione'; bAgg.onclick=apriElencoVolumi; panel.appendChild(bAgg);
+
   t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Utensile'; panel.appendChild(t);
   nodoAlbero(panel, sel&&sel.tipo==='utensile', 'var(--missing)', (progetto.utensile&&progetto.utensile.nome)?progetto.utensile.nome:'(dati non inseriti)', ()=>selezionaOggetto('utensile','unico'));
 }
@@ -1820,6 +2163,7 @@ function renderPannelloProprieta(){
   if(sel.tipo==='attrezzatura'){ const a=progetto.attrezzature.find(x=>x.id===sel.id); if(!a){ deselezionaOggetto(); return; } return renderProprietaAttrezzatura(panel,a); }
   if(sel.tipo==='pezzo'){ const p=progetto.pezzi.find(x=>x.id===sel.id); if(!p){ deselezionaOggetto(); return; } return renderProprietaPezzo(panel,p); }
   if(sel.tipo==='origine') return renderProprietaOrigine(panel, sel.id);
+  if(sel.tipo==='volume'){ const v=progetto.volumiLavorazione.find(x=>x.id===sel.id); if(!v){ deselezionaOggetto(); return; } return renderProprietaVolume(panel,v); }
 }
 
 function renderProprietaMacchina(panel){
@@ -1867,7 +2211,7 @@ function renderProprietaMacchina(panel){
 
 function renderProprietaUtensile(panel){
   const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginBottom='10px';
-  nota.textContent='Questi dati sono salvati nel progetto ma NON sono ancora utilizzati nei controlli automatici di questa versione (il controllo dinamico utensile/percorso è pianificato per una versione successiva). Vedi AIUTO → Informazioni e limiti.';
+  nota.textContent='Diametro fresa/codolo/portautensile e le rispettive lunghezze sono usati dal controllo dinamico (menu UTENSILE → Gestisci volumi di lavorazione) per calcolare l\'ingombro spazzato. "Sporgenza totale" resta un riferimento incrociato informativo: se differisce molto da lunghezza tagliente+codolo, il rapporto lo segnala come avviso, ma la geometria usata nei calcoli è sempre quella dei campi espliciti sotto.';
   panel.appendChild(nota);
   const u=progetto.utensile;
   campoTesto(panel, u, 'nome', 'Nome utensile');
@@ -2017,6 +2361,31 @@ function renderProprietaOrigine(panel, codice){
   });
 }
 
+function renderProprietaVolume(panel, vol){
+  const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginBottom='10px';
+  nota.textContent='Quote della regione entro cui si assume che la punta utensile possa trovarsi durante l\'operazione (non un percorso reale — vedi AIUTO). Rispetto all\'origine indicata, stessa convenzione dei pezzi.';
+  panel.appendChild(nota);
+  campoTesto(panel, vol, 'nome', 'Nome / operazione');
+  campoSelect(panel, vol, 'origine', 'Origine associata', [{value:'',label:'— nessuna —'}, ...CODICI_ORIGINE.map(c=>({value:c,label:c}))]);
+
+  const fQ=document.createElement('fieldset'); fQ.className='gruppo'; fQ.innerHTML='<legend>Quote rispetto all\'origine</legend>'; panel.appendChild(fQ);
+  let r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,vol,'xMin','X minimo'); campoNumero(r,vol,'xMax','X massimo');
+  r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,vol,'yMin','Y minimo'); campoNumero(r,vol,'yMax','Y massimo');
+  r=document.createElement('div'); r.className='riga2'; fQ.appendChild(r);
+  campoNumero(r,vol,'zMin','Z minimo (punta più profonda)'); campoNumero(r,vol,'zMax','Z massimo (punta più alta)');
+
+  campoNumero(panel, vol, 'quotaSicurezza', 'Quota di sicurezza (piano di ritorno)', {nota:'Deve restare superiore alla Z massima qui sopra: sotto viene segnalato un avviso.'});
+  campoTesto(panel, vol, 'note', 'Note', {area:true});
+
+  const bElim=document.createElement('button'); bElim.className='btn pericolo'; bElim.style.marginTop='10px'; bElim.textContent='Elimina volume di lavorazione';
+  bElim.onclick=()=>apriConferma('Eliminare definitivamente il volume "'+(vol.nome||vol.id)+'"?', ()=>{
+    progetto.volumiLavorazione=progetto.volumiLavorazione.filter(x=>x.id!==vol.id); deselezionaOggetto(); segnaModificato();
+  }, 'Elimina');
+  panel.appendChild(bElim);
+}
+
 /* =====================================================================
    12. MODALI ELENCO (aggiungi/rimuovi/seleziona) — ATTREZZATURE, PEZZI
    ===================================================================== */
@@ -2062,6 +2431,28 @@ function apriElencoPezzi(){
     const bC=document.createElement('button'); bC.className='btn'; bC.textContent='Chiudi'; bC.onclick=chiudiModal; foot.appendChild(bC);
   });
 }
+function apriElencoVolumi(){
+  apriModal('Volumi di lavorazione', (body,foot)=>{
+    const intro=document.createElement('div'); intro.className='nota-campo'; intro.style.marginBottom='8px';
+    intro.textContent='Regione dichiarata entro cui può trovarsi la punta utensile durante un\'operazione — non un percorso reale. Vedi AIUTO.';
+    body.appendChild(intro);
+    renderElenco(body, progetto.volumiLavorazione, {
+      titoloItem:v=>v.nome||'(senza nome)',
+      subItem:v=>v.origine||'senza origine',
+      coloreItem:()=>COLORI.volume,
+      onSeleziona:v=>{ chiudiModal(); selezionaOggetto('volume',v.id); },
+      onRimuovi:v=>apriConferma('Rimuovere il volume "'+(v.nome||v.id)+'"?', ()=>{
+        progetto.volumiLavorazione=progetto.volumiLavorazione.filter(x=>x.id!==v.id);
+        if(progetto.ui.selezione&&progetto.ui.selezione.tipo==='volume'&&progetto.ui.selezione.id===v.id) progetto.ui.selezione=null;
+        segnaModificato(); riDisegnaModal();
+      })
+    });
+    const bAgg=document.createElement('button'); bAgg.className='btn primario'; bAgg.style.marginTop='8px'; bAgg.textContent='+ Nuovo volume di lavorazione';
+    bAgg.onclick=()=>{ const v=creaVolumeLavorazione(); progetto.volumiLavorazione.push(v); segnaModificato(); chiudiModal(); selezionaOggetto('volume',v.id); };
+    body.appendChild(bAgg);
+    const bC=document.createElement('button'); bC.className='btn'; bC.textContent='Chiudi'; bC.onclick=chiudiModal; foot.appendChild(bC);
+  });
+}
 
 /* =====================================================================
    13. STATO GLOBALE (badge) E ABILITAZIONE PULSANTE VERIFICA
@@ -2101,26 +2492,27 @@ function aggiornaBadgeGlobale(){
 function riDisegnaTutto(){
   renderAlbero();
   if(progetto.ui.selezione) renderPannelloProprieta();
-  if(progetto.ui.vistaAttiva==='pianta') disegnaContenutoSvg();
+  if(['pianta','laterale','frontale'].includes(progetto.ui.vistaAttiva)) ridisegnaVistaCorrente();
   aggiornaBadgeGlobale();
 }
 function riDisegnaAppCompleta(){
   renderMenubar(); renderTabsVista(); renderToolbarCanvas();
   renderAlbero(); renderPannelloProprieta();
-  document.getElementById('svg-host').classList.toggle('hidden', progetto.ui.vistaAttiva!=='pianta');
+  const usaSvg = ['pianta','laterale','frontale'].includes(progetto.ui.vistaAttiva);
+  document.getElementById('svg-host').classList.toggle('hidden', !usaSvg);
   document.getElementById('foto-host').classList.toggle('hidden', progetto.ui.vistaAttiva!=='foto');
-  if(progetto.ui.vistaAttiva==='pianta') ricalcolaEDisegnaPianta(); else renderVistaFoto();
+  if(usaSvg) ricalcolaERidisegnaVistaCorrente(); else renderVistaFoto();
   aggiornaBadgeGlobale();
 }
 function renderTabsVista(){
   const host=document.getElementById('view-tabs'); host.innerHTML='';
   [{id:'pianta',label:'Pianta (XY)',abil:true},{id:'foto',label:'Foto riferimento',abil:true},
-   {id:'laterale',label:'Laterale (XZ)',abil:false},{id:'frontale',label:'Frontale (YZ)',abil:false}].forEach(t=>{
+   {id:'laterale',label:'Laterale (XZ)',abil:true},{id:'frontale',label:'Frontale (YZ)',abil:true}].forEach(t=>{
     const b=document.createElement('button'); b.className='tab-btn'+(progetto.ui.vistaAttiva===t.id?' attiva':''); b.textContent=t.label; b.disabled=!t.abil;
     if(t.abil) b.onclick=()=>mostraVista(t.id);
     host.appendChild(b);
   });
-  const nota=document.createElement('span'); nota.className='tab-nota-disab'; nota.textContent='Laterale/Frontale: pianificate per una versione successiva.'; host.appendChild(nota);
+  const nota=document.createElement('span'); nota.className='tab-nota-disab'; nota.textContent='Laterale/Frontale: solo selezione, non ancora trascinabili.'; host.appendChild(nota);
 }
 function renderToolbarCanvas(){
   const host=document.getElementById('canvas-toolbar'); host.innerHTML='';
@@ -2145,6 +2537,24 @@ function renderToolbarCanvas(){
     const spacer=document.createElement('div'); spacer.className='spacer'; host.appendChild(spacer);
     const bOrig=document.createElement('label'); bOrig.className='tool-check'; bOrig.innerHTML='<input type="checkbox" '+(progetto.ui.origHidden?'':'checked')+'> Origini';
     bOrig.querySelector('input').onchange=(e)=>{ progetto.ui.origHidden=!e.target.checked; disegnaContenutoSvg(); };
+    host.appendChild(bOrig);
+  } else if(progetto.ui.vistaAttiva==='laterale' || progetto.ui.vistaAttiva==='frontale'){
+    const bOut=document.createElement('button'); bOut.className='tool-btn'; bOut.textContent='\u2212'; bOut.title='Riduci zoom';
+    bOut.onclick=()=>{ progetto.ui.zoom=clampZoom(progetto.ui.zoom*0.85); ridisegnaVistaCorrente(); document.getElementById('zoom-val').textContent=Math.round(progetto.ui.zoom*100)+'%'; };
+    const zv=document.createElement('span'); zv.id='zoom-val'; zv.textContent=Math.round(progetto.ui.zoom*100)+'%';
+    const bIn=document.createElement('button'); bIn.className='tool-btn'; bIn.textContent='+'; bIn.title='Aumenta zoom';
+    bIn.onclick=()=>{ progetto.ui.zoom=clampZoom(progetto.ui.zoom*1.18); ridisegnaVistaCorrente(); document.getElementById('zoom-val').textContent=Math.round(progetto.ui.zoom*100)+'%'; };
+    const bFit=document.createElement('button'); bFit.className='tool-btn'; bFit.style.fontSize='11px'; bFit.textContent='FIT'; bFit.title='Adatta alla finestra';
+    bFit.onclick=()=>{ progetto.ui.zoom=1; progetto.ui.panX=0; progetto.ui.panY=0; ricalcolaERidisegnaVistaCorrente(); document.getElementById('zoom-val').textContent='100%'; };
+    host.appendChild(bOut); host.appendChild(zv); host.appendChild(bIn);
+    const sep=document.createElement('div'); sep.className='tool-sep'; host.appendChild(sep); host.appendChild(bFit);
+    const sep2=document.createElement('div'); sep2.className='tool-sep'; host.appendChild(sep2);
+    const nota=document.createElement('span'); nota.className='tool-check'; nota.style.color='var(--tx-dim)';
+    nota.textContent = progetto.ui.vistaAttiva==='laterale' ? 'Inviluppo = corse X/Z' : 'Inviluppo = corse Y/Z';
+    host.appendChild(nota);
+    const spacer=document.createElement('div'); spacer.className='spacer'; host.appendChild(spacer);
+    const bOrig=document.createElement('label'); bOrig.className='tool-check'; bOrig.innerHTML='<input type="checkbox" '+(progetto.ui.origHidden?'':'checked')+'> Origini';
+    bOrig.querySelector('input').onchange=(e)=>{ progetto.ui.origHidden=!e.target.checked; ridisegnaVistaCorrente(); };
     host.appendChild(bOrig);
   } else if(progetto.ui.vistaAttiva==='foto'){
     const bCarica=document.createElement('button'); bCarica.className='btn piccolo'; bCarica.textContent='Carica foto'; bCarica.onclick=()=>document.getElementById('file-import-photo').click();
@@ -2224,7 +2634,7 @@ function apriReportAnomalie(){
    non simulati)
    ===================================================================== */
 let _wizardStepIdx = 0;
-let _wizardFocusAttrezzatura = null, _wizardFocusPezzo = null;
+let _wizardFocusAttrezzatura = null, _wizardFocusPezzo = null, _wizardFocusVolume = null;
 
 function boxFocus(body, obj, campi){
   const box=document.createElement('div'); box.style.marginTop='12px'; box.style.paddingTop='12px'; box.style.borderTop='1px solid var(--bd)';
@@ -2310,7 +2720,41 @@ const WIZARD_STEPS = [
         riga.appendChild(chk); riga.appendChild(lab); body.appendChild(riga);
       });
   }},
-  { titolo:'7. Riepilogo', sotto:'Il controllo dinamico utensile/percorso non \u00e8 disponibile in questa versione: la verifica riguarder\u00e0 solo gli aspetti statici.', render:(body)=>{
+  { titolo:'7. Utensile e volumi di lavorazione', sotto:'Facoltativo: necessario solo per il controllo dinamico (parte tagliente/codolo/portautensile contro ostacoli).', render:(body)=>{
+      if(!progetto.utensile) progetto.utensile = creaUtensile();
+      const u = progetto.utensile;
+      const fU=document.createElement('fieldset'); fU.className='gruppo'; fU.innerHTML='<legend>Utensile</legend>'; body.appendChild(fU);
+      let r=document.createElement('div'); r.className='riga2'; fU.appendChild(r);
+      campoNumero(r,u,'diametroFresa','Diametro fresa',{modale:true}); campoNumero(r,u,'lunghezzaTagliente','Lungh. tagliente',{modale:true});
+      r=document.createElement('div'); r.className='riga2'; fU.appendChild(r);
+      campoNumero(r,u,'diametroCodolo','Diametro codolo',{modale:true}); campoNumero(r,u,'lunghezzaCodolo','Lungh. codolo',{modale:true});
+      r=document.createElement('div'); r.className='riga2'; fU.appendChild(r);
+      campoNumero(r,u,'diametroPortautensile','Diametro portaut.',{modale:true}); campoNumero(r,u,'lunghezzaPortautensile','Lungh. portaut.',{modale:true});
+
+      const fV=document.createElement('fieldset'); fV.className='gruppo'; fV.innerHTML='<legend>Volumi di lavorazione</legend>'; body.appendChild(fV);
+      renderElenco(fV, progetto.volumiLavorazione, { selezionatoId:_wizardFocusVolume, titoloItem:v=>v.nome||'(senza nome)', subItem:v=>v.origine||'senza origine',
+        coloreItem:()=>COLORI.volume,
+        onSeleziona:v=>{ _wizardFocusVolume=v.id; riDisegnaModal(); },
+        onRimuovi:v=>{ progetto.volumiLavorazione=progetto.volumiLavorazione.filter(x=>x.id!==v.id); if(_wizardFocusVolume===v.id)_wizardFocusVolume=null; segnaModificato(); riDisegnaModal(); } });
+      const bAgg=document.createElement('button'); bAgg.className='btn'; bAgg.textContent='+ Nuovo volume di lavorazione';
+      bAgg.onclick=()=>{ const v=creaVolumeLavorazione(); progetto.volumiLavorazione.push(v); _wizardFocusVolume=v.id; segnaModificato(); riDisegnaModal(); };
+      fV.appendChild(bAgg);
+      const vol = progetto.volumiLavorazione.find(x=>x.id===_wizardFocusVolume);
+      if(vol) boxFocus(fV, vol, (box,vol)=>{
+        campoSelect(box,vol,'origine','Origine',[{value:'',label:'\u2014 nessuna \u2014'}, ...CODICI_ORIGINE.map(c=>({value:c,label:c}))],{modale:true});
+        let rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+        campoNumero(rr,vol,'xMin','X min',{modale:true}); campoNumero(rr,vol,'xMax','X max',{modale:true});
+        rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+        campoNumero(rr,vol,'yMin','Y min',{modale:true}); campoNumero(rr,vol,'yMax','Y max',{modale:true});
+        rr=document.createElement('div'); rr.className='riga2'; box.appendChild(rr);
+        campoNumero(rr,vol,'zMin','Z min',{modale:true}); campoNumero(rr,vol,'zMax','Z max',{modale:true});
+        campoNumero(box,vol,'quotaSicurezza','Quota di sicurezza',{modale:true});
+      });
+      const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginTop='8px';
+      nota.textContent='Se lasci questo passo vuoto, il controllo dinamico resta NON CONFIGURATO e non influisce sullo stato statico.';
+      body.appendChild(nota);
+  }},
+  { titolo:'8. Riepilogo', sotto:'Controllo statico e, se configurato, controllo dinamico basato su volume di lavorazione.', render:(body)=>{
       const r = Motore.eseguiControlli(progetto);
       function riga(label,val){ const d=document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.padding='5px 0'; d.style.borderBottom='1px solid var(--bd)'; d.style.fontSize='12.5px';
         const l=document.createElement('span'); l.style.color='var(--tx-dim)'; l.textContent=label; const v=document.createElement('span'); v.className='mono'; v.textContent=val; d.appendChild(l); d.appendChild(v); body.appendChild(d); }
@@ -2321,9 +2765,11 @@ const WIZARD_STEPS = [
       riga('Origini con coordinate', CODICI_ORIGINE.filter(c=>tuttiNum(progetto.origini[c].x,progetto.origini[c].y)).length+' / 6');
       riga('Pezzi', String(progetto.pezzi.length));
       riga('Pezzi "lavorato"', String(progetto.pezzi.filter(p=>p.ruolo==='lavorato').length));
+      riga('Volumi di lavorazione', String(progetto.volumiLavorazione.length));
+      riga('Controllo dinamico', r.dinamico.replace('_',' ').toUpperCase());
       riga('Stato attuale', r.globale);
       const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginTop='10px';
-      nota.textContent='Al termine verr\u00e0 aperto il rapporto con il dettaglio dei controlli statici effettivamente eseguibili con i dati inseriti.';
+      nota.textContent='Al termine verr\u00e0 aperto il rapporto con il dettaglio dei controlli statici e, se configurato, dinamici.';
       body.appendChild(nota);
   }}
 ];
@@ -2387,8 +2833,50 @@ function testDiagnostici(){
     const an=Motore.eseguiControlli(p).anomalie.find(x=>x.tipo==='SUPERAMENTO_CORSE');
     return !!an && an.asse==='X' && an.distanzaOPenetrazione!==null;
   });
-  t('6. Percorso vicino a un ostacolo', null, true);
-  t('7. Assenza di percorso/volume \u2192 collisione dinamica non verificabile', null, true);
+  t('6. Percorso reale vicino a un ostacolo (richiede un percorso importato, non un volume)', null, true);
+  t('7. Assenza di volume di lavorazione \u2192 dinamico NON CONFIGURATO, non influisce sullo statico', ()=>{
+    const p=creaProgettoVuoto();
+    p.macchina.tavola={lunghezza:600,larghezza:400,quotaSuperiore:0,posizione:{x:0,y:0,z:0}};
+    p.macchina.corse={xMin:0,xMax:600,yMin:0,yMax:400,zMin:-300,zMax:0};
+    const a=creaAttrezzatura('morsa'); a.lunghezzaX=100;a.larghezzaY=100;a.altezzaZ=40;a.x=50;a.y=50;a.zBase=-40; p.attrezzature.push(a);
+    const r = Motore.eseguiControlli(p);
+    return r.dinamico==='non_configurato' && r.globale===STATI.OK;
+  });
+  t('10. Ostacolo nel volume di lavorazione \u2192 collisione dinamica rilevata', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    p.utensile = Object.assign(creaUtensile(),{diametroFresa:10,lunghezzaTagliente:30,diametroCodolo:10,lunghezzaCodolo:40,diametroPortautensile:40,lunghezzaPortautensile:60});
+    const v = Object.assign(creaVolumeLavorazione(),{origine:'G54',xMin:-20,xMax:20,yMin:-20,yMax:20,zMin:-15,zMax:0,quotaSicurezza:50});
+    p.volumiLavorazione.push(v);
+    const ostacolo = Object.assign(creaPezzo(),{origine:'G54',ruolo:'ostacolo',xMin:-25,xMax:-5,yMin:-25,yMax:-5,zMin:-15,zMax:0});
+    p.pezzi.push(ostacolo);
+    return Motore.eseguiControlli(p).anomalie.some(x=>x.tipo==='UTENSILE_CONTRO_OSTACOLO'&&x.gravita===STATI.COLLISIONE);
+  });
+  t('11. Parte tagliente sul pezzo attivo ammessa, ma codolo mai', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    const u = Object.assign(creaUtensile(),{diametroFresa:10,lunghezzaTagliente:2,diametroCodolo:10,lunghezzaCodolo:40,diametroPortautensile:40,lunghezzaPortautensile:60});
+    p.utensile = u;
+    const v = Object.assign(creaVolumeLavorazione(),{origine:'G54',xMin:-20,xMax:20,yMin:-20,yMax:20,zMin:-15,zMax:-14,quotaSicurezza:50});
+    p.volumiLavorazione.push(v);
+    const attivo = Object.assign(creaPezzo(),{origine:'G54',ruolo:'lavorato',xMin:-25,xMax:25,yMin:-25,yMax:25,zMin:-30,zMax:20});
+    p.pezzi.push(attivo);
+    const an = Motore.eseguiControlli(p).anomalie;
+    return !an.some(x=>x.tipo==='UTENSILE_CONTRO_OSTACOLO') && an.some(x=>x.tipo==='CODOLO_CONTRO_OGGETTO'&&x.gravita===STATI.COLLISIONE);
+  });
+  t('12. Dati utensile incompleti con volume presente \u2192 DATI INCOMPLETI, mai falso OK', ()=>{
+    const p=creaProgettoVuoto(); p.macchina.tavola={lunghezza:600,larghezza:400,quotaSuperiore:0,posizione:{x:0,y:0,z:0}};
+    const a=creaAttrezzatura('morsa'); a.lunghezzaX=100;a.larghezzaY=100;a.altezzaZ=40;a.x=50;a.y=50;a.zBase=0; p.attrezzature.push(a);
+    p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    p.utensile = creaUtensile(); // vuoto
+    p.volumiLavorazione.push(Object.assign(creaVolumeLavorazione(),{origine:'G54',xMin:-20,xMax:20,yMin:-20,yMax:20,zMin:-15,zMax:0,quotaSicurezza:50}));
+    const r = Motore.eseguiControlli(p);
+    return r.dinamico==='dati_incompleti' && r.globale===STATI.DATI_INCOMPLETI;
+  });
+  t('13. Salvataggio e riapertura di un volume di lavorazione \u2192 dati invariati', ()=>{
+    const p=creaProgettoVuoto();
+    p.volumiLavorazione.push(Object.assign(creaVolumeLavorazione(),{nome:'T',origine:'G54',xMin:-1.5,xMax:2.5,quotaSicurezza:25}));
+    const ripristinato=normalizzaProgettoCaricato(JSON.parse(JSON.stringify(p)));
+    return ripristinato.volumiLavorazione[0].xMin===-1.5 && ripristinato.volumiLavorazione[0].quotaSicurezza===25;
+  });
   t('8. Salvataggio e riapertura \u2192 dati invariati', ()=>{
     const p=creaProgettoVuoto(); p.macchina.corse.xMin=-12.5; const a=creaAttrezzatura('morsa'); a.x=3.5; p.attrezzature.push(a);
     const ripristinato=normalizzaProgettoCaricato(JSON.parse(JSON.stringify(p)));
@@ -2402,7 +2890,7 @@ function testDiagnostici(){
 function apriDiagnostica(){
   apriModal('Diagnostica', (body,foot)=>{
     const intro=document.createElement('div'); intro.className='nota-campo'; intro.style.marginBottom='10px';
-    intro.textContent='Test eseguiti ora, dal vivo, sul motore statico realmente presente in questa build. I casi 6 e 7 riguardano il controllo dinamico utensile/percorso, non ancora implementato: sono segnalati come non applicabili (N/D), non fatti passare artificialmente.';
+    intro.textContent='Test eseguiti ora, dal vivo, sul motore statico e dinamico realmente presenti in questa build. Solo il caso 6 (percorso reale importato) resta non applicabile: questa versione verifica un volume di lavorazione dichiarato, non un percorso — è segnalato come N/D, non fatto passare artificialmente.';
     body.appendChild(intro);
     testDiagnostici().forEach(r=>{
       const riga=document.createElement('div'); riga.className='diag-riga';
@@ -2424,28 +2912,36 @@ function apriAiuto(){
   apriModal('Informazioni e limiti del progetto', (body,foot)=>{
     body.innerHTML = `
     <p style="font-size:13px;color:var(--tx-mid)"><b style="color:var(--warn)">Strumento di pre-verifica geometrica.</b> Non \u00e8 un simulatore CNC certificato. Non sostituisce: simulazione CAM; simulazione del controllo CNC; Single Block; Dry Run; prova con avanzamento ridotto; procedure di sicurezza della macchina.</p>
-    <p style="font-size:13px;color:var(--tx-mid)">Versione app: <b class="mono">${APP_VERSION}</b> \u2014 nucleo statico.</p>
-    <fieldset class="gruppo"><legend>Cosa fa questa versione</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
+    <p style="font-size:13px;color:var(--tx-mid)">Versione app: <b class="mono">${APP_VERSION}</b> \u2014 nucleo statico + controllo dinamico su volume di lavorazione + viste ortogonali XZ/YZ.</p>
+    <fieldset class="gruppo"><legend>Cosa fa questa versione \u2014 statico</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
       <li>Configurazione macchina, tavola, corse, orientamento assi a schermo.</li>
       <li>Piano magnetico, morsa, altre attrezzature, con zone di ingombro aggiuntive e punti di fissaggio.</li>
       <li>Origini G54\u2013G59.</li>
       <li>Pezzi con quote X/Y/Z minimo-massimo rispetto all'origine, anche esterna al pezzo.</li>
       <li>Controllo <b>statico</b>: attrezzatura fuori tavola, attrezzatura contro attrezzatura, pezzo contro pezzo, pezzo fuori dal supporto o dalla tavola, pezzo contro altra attrezzatura, margine insufficiente (stima conservativa per difetto), superamento corse macchina, intersezione con zone vietate \u2014 con rettangoli orientati (OBB) e Separating Axis Theorem, non semplici AABB, combinati con la sovrapposizione degli intervalli Z.</li>
       <li>Vista in pianta (XY) quotata: zoom, pan, trascinamento, selezione, griglia, snap.</li>
+      <li>Viste laterale (XZ) e frontale (YZ): stessa geometria proiettata sull'asse verticale Z, inquadrate sulle corse macchina (non sulla tavola). La tavola vi appare come banda tra <span class="mono">posizione.z</span> e <span class="mono">quotaSuperiore</span>. Zoom, pan e selezione funzionano; il trascinamento resta per ora solo in pianta.</li>
       <li>Vista foto di riferimento, sempre etichettata "FOTO DI RIFERIMENTO \u2014 NON IN SCALA".</li>
-      <li>Salvataggio/apertura progetto in JSON, autosalvataggio locale, esportazione rapporto in .txt.</li>
-      <li>Diagnostica con casi sintetici eseguiti dal vivo sul motore reale.</li>
+    </ul></fieldset>
+    <fieldset class="gruppo"><legend>Cosa fa questa versione \u2014 dinamico</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
+      <li>UTENSILE \u2192 Gestisci volumi di lavorazione: dichiari una regione X/Y/Z (rispetto a un'origine) entro cui pu\u00f2 trovarsi la <b>punta</b> dell'utensile durante l'operazione \u2014 non un percorso reale importato.</li>
+      <li>Il motore costruisce 3 ingombri conservativi \u2014 parte tagliente, codolo, portautensile \u2014 assumendo che la punta possa stare ovunque nel volume dichiarato. Il volume realmente spazzato da un percorso vero \u00e8 un <b>sottoinsieme</b> di questo: il metodo non produce mai un falso negativo, pu\u00f2 segnalare interferenze che un percorso pi\u00f9 stretto non incontrerebbe davvero.</li>
+      <li>La parte tagliente pu\u00f2 intersecare solo il pezzo contrassegnato "lavorato"; codolo e portautensile non devono mai intersecare nulla, nemmeno quel pezzo.</li>
+      <li>Controlli: utensile/codolo/portautensile contro pezzi e attrezzature; punta oltre le corse macchina; penetrazione della punta sotto la base del pezzo attivo; quota di sicurezza non superiore alla Z massima del volume; rotazione del pezzo attivo non applicata al volume (avviso); coerenza tra sporgenza totale e tagliente+codolo (avviso).</li>
+      <li>Se utensile o volumi non sono ancora configurati, il badge di stato resta quello statico (non scende a "non eseguibile" solo perch\u00e9 non hai ancora iniziato); se li hai iniziati ma sono incompleti, sale a DATI INCOMPLETI.</li>
+      <li>Il controllo Z rispetto alle corse macchina riguarda solo il range della <b>punta</b>: codolo e portautensile si estendono naturalmente oltre (sono sopra la punta), non ha senso fisico limitarli alla corsa Z.</li>
+      <li>Nelle viste laterale/frontale, il volume di lavorazione \u00e8 disegnato come rettangolo dichiarato: non mostra l'ingombro utensile gi\u00e0 espanso per raggio/margine.</li>
     </ul></fieldset>
     <fieldset class="gruppo"><legend>Cosa NON fa ancora questa versione</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
-      <li>Nessun controllo <b>dinamico</b> di utensile, codolo e portautensile lungo un percorso o un volume di lavorazione (Modalit\u00e0 A/B della specifica). I dati utensile inseriti in UTENSILE sono salvati ma non ancora usati nei calcoli: ogni rapporto lo segnala esplicitamente.</li>
-      <li>Nessun parser di file G-code (.nc/.tap/.txt).</li>
-      <li>Viste laterale (XZ) e frontale (YZ) non ancora implementate (tab disabilitate in Vista).</li>
+      <li>Nessun percorso utensile reale n\u00e9 parser G-code (.nc/.tap/.txt): solo il volume di lavorazione dichiarato manualmente.</li>
+      <li>Il volume di lavorazione non ruota insieme al pezzo attivo: se il pezzo ha una rotazione diversa da zero, il volume resta comunque allineato agli assi macchina (l'app te lo segnala con un avviso, ma non lo corregge automaticamente).</li>
+      <li>Nelle viste laterale/frontale non si trascina nulla (solo selezione, zoom, pan): per spostare un oggetto torna alla pianta o modifica i campi numerici nel pannello proprietà. Le zone vietate senza quote Z non compaiono in queste viste (mancherebbe l'estensione verticale).</li>
       <li>Nessun ottimizzatore automatico del piazzamento ("Suggerisci piazzamento").</li>
       <li>La foto di riferimento viene inclusa nell'autosalvataggio locale solo se lo spazio disponibile lo consente; non \u00e8 ancora inclusa nel file JSON di "Salva"/"Salva con nome".</li>
-      <li>La rotazione di attrezzature e pezzi si imposta da campo numerico: non \u00e8 ancora trascinabile a schermo (la sola posizione X/Y lo \u00e8).</li>
+      <li>La rotazione di attrezzature e pezzi si imposta da campo numerico: non \u00e8 ancora trascinabile a schermo (la sola posizione X/Y lo \u00e8, e solo in pianta). I volumi di lavorazione non sono trascinabili.</li>
       <li>"Salva" scarica una nuova copia del file: per limiti del browser non pu\u00f2 sovrascrivere in modo invisibile il file originale.</li>
     </ul></fieldset>
-    <p style="font-size:11.5px;color:var(--tx-dim)">Il margine tra due elementi separati \u00e8 calcolato come limite inferiore conservativo (proiezione sugli assi del test SAT): la distanza reale non \u00e8 mai inferiore al valore indicato, ma in configurazioni "ad angolo" pu\u00f2 essere superiore. Questo pu\u00f2 generare avvisi di margine insufficiente pi\u00f9 cautelativi del reale, mai il contrario.</p>`;
+    <p style="font-size:11.5px;color:var(--tx-dim)">Il margine tra due elementi separati \u00e8 calcolato come limite inferiore conservativo (proiezione sugli assi del test SAT): la distanza reale non \u00e8 mai inferiore al valore indicato, ma in configurazioni "ad angolo" pu\u00f2 essere superiore. Questo pu\u00f2 generare avvisi di margine insufficiente pi\u00f9 cautelativi del reale, mai il contrario. Lo stesso principio di cautela per difetto vale per il volume di lavorazione: pu\u00f2 sovrastimare l'ingombro reale, mai sottostimarlo.</p>`;
     const bChiudi=document.createElement('button'); bChiudi.className='btn primario'; bChiudi.textContent='Chiudi'; bChiudi.onclick=chiudiModal; foot.appendChild(bChiudi);
   }, {largo:true});
 }
