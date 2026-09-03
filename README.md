@@ -4,7 +4,7 @@ Web app monofile (HTML+CSS+JS, nessuna dipendenza) per la pre-verifica geometric
 piazzamenti su tavola: piano magnetico, morsa, origini G54–G59, pezzi, controllo statico
 di collisioni/margini/superamento corse.
 
-**Versione:** v0.1.0 — nucleo statico.
+**Versione:** v0.4.0 — statico + dinamico (utensile, portautensile, mandrino) + viste XZ/YZ + origini attrezzatura.
 
 ## ⚠️ Avviso
 

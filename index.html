@@ -92,11 +92,10 @@ button{cursor:pointer;}
 
 /* ---------- layout centrale ---------- */
 #layout{flex:1 1 auto; display:flex; min-height:0;}
-#tree-panel, #props-panel{
+#tree-panel{
   flex:0 0 240px; background:var(--bg-1); border-right:1px solid var(--bd);
   overflow-y:auto; padding:8px;
 }
-#props-panel{border-right:none; border-left:1px solid var(--bd);}
 #canvas-wrap{flex:1 1 auto; display:flex; flex-direction:column; min-width:0; background:var(--bg-0);}
 
 .pannello-titolo{
@@ -180,6 +179,8 @@ button{cursor:pointer;}
 .badge-stato.st-collisione{color:var(--danger); border-color:var(--danger); background:var(--danger-fill);}
 .badge-stato.st-margine-insufficiente, .badge-stato.st-avviso{color:var(--warn); border-color:var(--warn); background:var(--warn-fill);}
 .badge-stato.st-ok{color:var(--active); border-color:var(--active); background:var(--active-fill);}
+#autosave-ind{font-size:12px; color:var(--tx-dim); white-space:nowrap; margin-left:10px;}
+#autosave-ind.salvato{color:var(--active);}
 .btn-grande{
   flex:1 1 0; max-width:280px; height:44px; border-radius:var(--radius); font-family:var(--font-display);
   font-weight:700; letter-spacing:.04em; text-transform:uppercase; font-size:14.5px; border:1px solid var(--bd-strong);
@@ -313,20 +314,19 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:12px; letter-s
   .menu-btn{padding:9px 9px; font-size:13.5px;}
 }
 @media (max-width:860px){
-  #tree-panel, #props-panel{
+  #tree-panel{
     position:fixed; top:calc(var(--topbar-h) + var(--disclaimer-h)); bottom:var(--bottombar-h);
     width:82vw; max-width:320px; z-index:60; box-shadow:0 0 30px rgba(0,0,0,.5);
     transform:translateX(-105%); transition:transform .18s ease;
   }
-  #props-panel{left:auto; right:0; transform:translateX(105%);}
   #tree-panel.aperto{transform:translateX(0);}
-  #props-panel.aperto{transform:translateX(0);}
   #drawer-scrim.attivo{display:block; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:55;}
   #menu-toggle-mobile{
     display:flex; align-items:center; justify-content:center; width:32px; height:32px;
     background:var(--bg-4); border:1px solid var(--bd-strong); border-radius:var(--radius); color:var(--tx-hi); font-size:15px; margin-right:4px;
   }
   .btn-grande{font-size:12.5px;}
+  #autosave-ind{display:none;}
 }
 </style>
 </head>
@@ -360,11 +360,11 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:12px; letter-s
       <div id="canvas-toolbar"></div>
     </main>
 
-    <aside id="props-panel"></aside>
   </div>
 
   <footer id="bottombar">
     <div id="badge-stato-globale" class="badge-stato st-non-configurato"><span class="icona">◆</span><span id="badge-stato-testo">NON CONFIGURATO</span></div>
+    <div id="autosave-ind" title="I dati restano nella memoria locale di questo browser">Salvataggio automatico attivo</div>
     <div class="spacer"></div>
     <button id="btn-wizard" class="btn-grande">Inizio controllo collisione</button>
     <button id="btn-verify" class="btn-grande" disabled>Verifica collisione</button>
@@ -398,7 +398,7 @@ fieldset.gruppo legend{font-family:var(--font-display); font-size:12px; letter-s
 /* =====================================================================
    1. COSTANTI, STATI E UTILITÀ GENERICHE
    ===================================================================== */
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.4.0';
 const SCHEMA_VERSION = 1;
 
 // Vocabolario esiti — usare ESCLUSIVAMENTE queste stringhe per gli stati.
@@ -499,11 +499,36 @@ function creaAttrezzatura(tipo){
     fisso: false,
     zoneIngombro: [],                                      // ingombri aggiuntivi: {id,nome,dx,dy,lunghezzaX,larghezzaY,altezzaZ,zBase}
     puntiFissaggio: [],                                    // {id,dx,dy} relativi allo spigolo min dell'attrezzatura
+    // Punto di origine dell'attrezzatura (es. zero del piano magnetico o della morsa):
+    // offset dallo spigolo minimo (dx,dy nel sistema locale, prima della rotazione) e da zBase (dz).
+    // codiceOrigine associa facoltativamente il punto a una delle origini G54-G59 per confronto.
+    origineRif: { dx:null, dy:null, dz:null, codiceOrigine:null },
     note: '',
     extra: tipo==='morsa'
       ? { apertura:null, larghezzaGanasce:null, altezzaGanasce:null, posGanasciaFissa:null, posGanasciaMobile:null, zonaManovraVite:null }
       : (tipo==='piano_magnetico' ? { zonaMagneticaUtile:null, bordiNonUtilizzabili:null, connettoriCaviNote:'' } : {})
   };
+}
+
+// Ingombro semplificato del mandrino: cilindro impilato sopra il portautensile.
+// Resta separato dall'utensile perché è una caratteristica della macchina, non del singolo utensile.
+function creaMandrino(){
+  return { diametro:null, lunghezza:null, margineRadiale:null };
+}
+
+// Coordinate macchina (MCS) del punto di origine dichiarato su un'attrezzatura.
+// dx/dy sono espressi nel sistema locale dell'attrezzatura e ruotano con essa attorno
+// allo spigolo minimo (x,y), coerentemente con Geo.obbAttrezzatura.
+function origineAttrezzaturaMcs(attr){
+  if(!attr || !attr.origineRif) return null;
+  const o = attr.origineRif;
+  if(!tuttiNum(attr.x, attr.y, o.dx, o.dy)) return null;
+  const rot = (attr.rotazione||0) * Math.PI/180;
+  const cos = Math.cos(rot), sin = Math.sin(rot);
+  const x = attr.x + o.dx*cos - o.dy*sin;
+  const y = attr.y + o.dx*sin + o.dy*cos;
+  const z = (isNum(attr.zBase) && isNum(o.dz)) ? attr.zBase + o.dz : null;
+  return { x, y, z };
 }
 
 function creaPezzo(){
@@ -566,6 +591,7 @@ function creaProgettoVuoto(){
     pezzi: [],
     volumiLavorazione: [],
     utensile: null,
+    mandrino: creaMandrino(),
     fotoRiferimento: { dataUrl:null, nomeFile:null, opacita:0.55, visibile:false },
     ui: { vistaAttiva:'pianta', zoom:1, panX:0, panY:0, snapAttivo:false, grigliaVisibile:true, selezione:null, wizardCompletato:false }
   };
@@ -806,7 +832,16 @@ function confrontaVolumi(descA, volA, descB, volB, margine, tipoBase, contesto){
 // percorso vero è un SOTTOINSIEME di questo: il metodo non produce mai un falso negativo,
 // ma può segnalare interferenze che un percorso reale più stretto non incontrerebbe davvero.
 // Il volume non ruota con l'origine/pezzo (stessa limitazione dichiarata in AIUTO).
-Motore._volumiUtensileSpazzati = function(volume, utensile, origine){
+function etichettaSegmento(seg){
+  return seg==='fresa' ? 'Parte tagliente' : seg==='codolo' ? 'Codolo' : seg==='portautensile' ? 'Portautensile' : 'Mandrino';
+}
+function tipoAnomaliaSegmento(seg){
+  return seg==='fresa' ? 'UTENSILE_CONTRO_OSTACOLO'
+    : seg==='codolo' ? 'CODOLO_CONTRO_OGGETTO'
+    : seg==='portautensile' ? 'PORTAUTENSILE_CONTRO_OGGETTO' : 'MANDRINO_CONTRO_OGGETTO';
+}
+
+Motore._volumiUtensileSpazzati = function(volume, utensile, origine, mandrino){
   if(!volume || !utensile || !origine) return null;
   if(!tuttiNum(volume.xMin,volume.xMax,volume.yMin,volume.yMax,volume.zMin,volume.zMax)) return null;
   if(!tuttiNum(origine.x,origine.y,origine.z)) return null;
@@ -833,7 +868,20 @@ Motore._volumiUtensileSpazzati = function(volume, utensile, origine){
   const zPortaMin = zCodoloMin+utensile.lunghezzaCodolo, zPortaMax = zCodoloMax+utensile.lunghezzaPortautensile;
   const portautensile = segmento(utensile.diametroPortautensile/2, zPortaMin, zPortaMax);
 
-  return { fresa, codolo, portautensile, zMinPunta, zMaxPunta };
+  // Naso mandrino: faccia inferiore del mandrino, cioè la sommità del portautensile.
+  // La posizione più bassa che può assumere corrisponde alla punta nel punto più profondo del volume.
+  const zNasoMin = zMinPunta + utensile.lunghezzaTagliente + utensile.lunghezzaCodolo + utensile.lunghezzaPortautensile;
+
+  // Il mandrino è opzionale: se non configurato il segmento non esiste (nessun ingombro inventato).
+  let segMandrino = null;
+  if(mandrino && tuttiNum(mandrino.diametro, mandrino.lunghezza)){
+    const mrM = isNum(mandrino.margineRadiale) ? mandrino.margineRadiale : mR;
+    const rM = mandrino.diametro/2 + mrM;
+    segMandrino = { corners: Geo.verticiOBB(cx, cy, semiX0+rM, semiY0+rM, 0), cx, cy,
+      zMin: zPortaMin+utensile.lunghezzaPortautensile-mA, zMax: zPortaMax+mandrino.lunghezza+mA };
+  }
+
+  return { fresa, codolo, portautensile, mandrino: segMandrino, zMinPunta, zMaxPunta, zNasoMin };
 };
 
 // Esegue il controllo dinamico su tutti i volumi di lavorazione configurati.
@@ -871,7 +919,10 @@ Motore._controlliDinamici = function(progetto){
     const geomOk = tuttiNum(vol.xMin,vol.xMax,vol.yMin,vol.yMax,vol.zMin,vol.zMax) && isNum(vol.quotaSicurezza)
       && origine && tuttiNum(origine.x,origine.y,origine.z);
     if(!geomOk || !utensileCompleto){ almenoUnoIncompleto = true; return; }
-    const spazzati = Motore._volumiUtensileSpazzati(vol, ut, origine);
+    const spazzati = Motore._volumiUtensileSpazzati(vol, ut, origine, progetto.mandrino);
+    // Elenchi di segmenti: il mandrino compare solo se realmente configurato.
+    const segSuperiori = ['codolo','portautensile'].concat(spazzati.mandrino ? ['mandrino'] : []);
+    const segTutti = ['fresa'].concat(segSuperiori);
     if(!spazzati){ almenoUnoIncompleto = true; return; }
     almenoUnoEseguito = true;
 
@@ -881,6 +932,16 @@ Motore._controlliDinamici = function(progetto){
         oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}], origineAttiva: vol.origine, asse:'Z',
         descrizione:'La quota di sicurezza dichiarata ('+fmtMm(vol.quotaSicurezza)+') non è superiore alla quota massima del volume di lavorazione ('+fmtMm(vol.zMax)+'): dovrebbe essere un piano di ritorno sopra l\'intera zona.',
         correzionePossibile:'Aumentare la quota di sicurezza oppure controllare le quote Z del volume.' }));
+    }
+    if(isNum(progetto.macchina.quotaMinimaNasoMandrino) && isNum(spazzati.zNasoMin)
+       && spazzati.zNasoMin < progetto.macchina.quotaMinimaNasoMandrino - 1e-9){
+      const sotto = progetto.macchina.quotaMinimaNasoMandrino - spazzati.zNasoMin;
+      anomalieDinamiche.push(nuovaAnomalia({ tipo:'NASO_MANDRINO_SOTTO_QUOTA_MINIMA', categoria:'dinamico',
+        titolo:'Naso mandrino sotto la quota minima: '+(vol.nome||vol.id), gravita: STATI.AVVISO,
+        oggetti:[{tipo:'volume',id:vol.id,nome:vol.nome||'(senza nome)'}], origineAttiva: vol.origine, asse:'Z',
+        distanzaOPenetrazione: sotto, margineRichiesto: progetto.macchina.quotaMinimaNasoMandrino,
+        descrizione:'Con la punta nel punto più profondo del volume, il naso mandrino scenderebbe a '+fmtMm(spazzati.zNasoMin)+', cioè '+fmtMm(sotto)+' sotto la quota minima dichiarata in MACCHINA ('+fmtMm(progetto.macchina.quotaMinimaNasoMandrino)+').',
+        correzionePossibile:'Usare un utensile con sporgenza maggiore, ridurre la profondità del volume di lavorazione, oppure verificare la quota minima dichiarata.' }));
     }
     if(pezzoAttivo && pezzoAttivo.origine===vol.origine && isNum(pezzoAttivo.rotazione) && Math.abs(pezzoAttivo.rotazione)>1e-9){
       anomalieDinamiche.push(nuovaAnomalia({ tipo:'VOLUME_RUOTATO_NON_CONSIDERATO', categoria:'dinamico',
@@ -902,7 +963,7 @@ Motore._controlliDinamici = function(progetto){
           descrizione:'Il range Z dichiarato per la punta utensile (da '+fmtMm(spazzati.zMinPunta)+' a '+fmtMm(spazzati.zMaxPunta)+') supera la corsa Z della macchina.',
           correzionePossibile:'Verificare la quota Z del volume di lavorazione, dell\'origine o le corse macchina.' }));
       }
-      ['fresa','codolo','portautensile'].forEach(seg=>{
+      segTutti.forEach(seg=>{
         const v = spazzati[seg];
         const c = Geo.contenutoInRettangolo(v.corners, rett);
         if(c && !c.contenuto){
@@ -926,9 +987,9 @@ Motore._controlliDinamici = function(progetto){
           {tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}, obbP, 0, 'UTENSILE_CONTRO_OSTACOLO', {origineAttiva:vol.origine});
         if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
       }
-      ['codolo','portautensile'].forEach(seg=>{
-        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:(seg==='codolo'?'Codolo':'Portautensile')+' — '+(vol.nome||vol.id)}, spazzati[seg],
-          {tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}, obbP, 0, seg==='codolo'?'CODOLO_CONTRO_OGGETTO':'PORTAUTENSILE_CONTRO_OGGETTO', {origineAttiva:vol.origine});
+      segSuperiori.forEach(seg=>{
+        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:etichettaSegmento(seg)+' — '+(vol.nome||vol.id)}, spazzati[seg],
+          {tipo:'pezzo',id:p.id,nome:p.nome||'(senza nome)'}, obbP, 0, tipoAnomaliaSegmento(seg), {origineAttiva:vol.origine});
         if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
       });
       if(eAttivo && isNum(obbP.zMin) && spazzati.fresa.zMin < obbP.zMin-1e-9){
@@ -944,9 +1005,9 @@ Motore._controlliDinamici = function(progetto){
     progetto.attrezzature.forEach(a=>{
       const obbA = Geo.obbAttrezzatura(a);
       if(!obbA) return;
-      ['fresa','codolo','portautensile'].forEach(seg=>{
-        const tipoAn = seg==='fresa' ? 'UTENSILE_CONTRO_OSTACOLO' : (seg==='codolo'?'CODOLO_CONTRO_OGGETTO':'PORTAUTENSILE_CONTRO_OGGETTO');
-        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:(seg==='fresa'?'Parte tagliente':seg==='codolo'?'Codolo':'Portautensile')+' — '+(vol.nome||vol.id)}, spazzati[seg],
+      segTutti.forEach(seg=>{
+        const tipoAn = tipoAnomaliaSegmento(seg);
+        const an = confrontaVolumi({tipo:'volume',id:vol.id,nome:etichettaSegmento(seg)+' — '+(vol.nome||vol.id)}, spazzati[seg],
           {tipo:'attrezzatura',id:a.id,nome:a.nome||'(senza nome)'}, obbA, 0, tipoAn, {origineAttiva:vol.origine});
         if(an){ an.categoria='dinamico'; if(an.gravita===STATI.COLLISIONE) anomalieDinamiche.push(an); }
       });
@@ -1175,6 +1236,38 @@ Motore.eseguiControlli = function(progetto){
     });
   });
 
+  // CAT 9b: coerenza fra il punto di origine dichiarato su un'attrezzatura e l'origine G54-G59 associata.
+  progetto.attrezzature.forEach(a=>{
+    const rif = a.origineRif;
+    if(!rif || !rif.codiceOrigine) return;
+    const org = progetto.origini[rif.codiceOrigine];
+    if(!org) return;
+    const calcolata = origineAttrezzaturaMcs(a);
+    if(!calcolata || !tuttiNum(calcolata.x, calcolata.y)){
+      catStati.origineAttrezzatura = STATI.DATI_INCOMPLETI;
+      return;
+    }
+    if(!tuttiNum(org.x, org.y)){
+      catStati.origineAttrezzatura = STATI.DATI_INCOMPLETI;
+      return;
+    }
+    const dX = calcolata.x - org.x, dY = calcolata.y - org.y;
+    const dZ = (isNum(calcolata.z) && isNum(org.z)) ? calcolata.z - org.z : null;
+    const scostamenti = [];
+    if(Math.abs(dX)>1e-3) scostamenti.push('X '+fmtMm(dX));
+    if(Math.abs(dY)>1e-3) scostamenti.push('Y '+fmtMm(dY));
+    if(dZ!==null && Math.abs(dZ)>1e-3) scostamenti.push('Z '+fmtMm(dZ));
+    if(scostamenti.length===0) return;
+    anomalie.push(nuovaAnomalia({ tipo:'ORIGINE_ATTREZZATURA_DISCORDANTE',
+      titolo:'Origine '+rif.codiceOrigine+' diversa dal punto dichiarato su '+(a.nome||a.id),
+      gravita: STATI.AVVISO,
+      oggetti:[{tipo:'attrezzatura',id:a.id,nome:a.nome||'(senza nome)'}],
+      origineAttiva: rif.codiceOrigine,
+      coordMacchina:[{nome:'Punto calcolato sull\'attrezzatura', x:calcolata.x, y:calcolata.y},{nome:rif.codiceOrigine+' impostata', x:org.x, y:org.y}],
+      descrizione:'Il punto di origine dichiarato sull\'attrezzatura e le coordinate impostate in '+rif.codiceOrigine+' non coincidono: scostamento '+scostamenti.join(', ')+'. Non è possibile stabilire automaticamente quale dei due valori sia quello corretto.',
+      correzionePossibile:'Verificare sulla macchina quale valore è autorevole, poi correggere l\'origine G oppure la posizione/offset dell\'attrezzatura (nel pannello attrezzatura c\'è il pulsante per riportare il punto calcolato nell\'origine).' }));
+  });
+
   // CAT 10: controllo dinamico utensile / volume di lavorazione
   const risultatoDinamico = Motore._controlliDinamici(progetto);
   anomalie.push(...risultatoDinamico.anomalie);
@@ -1202,7 +1295,7 @@ Motore.eseguiControlli = function(progetto){
 };
 
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { Geo, Motore, creaOrigine, creaAttrezzatura, creaPezzo, creaUtensile, creaZonaVietata, creaVolumeLavorazione, creaProgettoVuoto, parseNumeroIt, STATI, isNum, CODICI_ORIGINE };
+  module.exports = { Geo, Motore, creaOrigine, creaAttrezzatura, creaPezzo, creaUtensile, creaMandrino, creaZonaVietata, creaVolumeLavorazione, creaProgettoVuoto, origineAttrezzaturaMcs, parseNumeroIt, STATI, isNum, CODICI_ORIGINE };
 }
 /* ===== FINE MODULO PURO (Geo + Motore + modello dati) — testabile in Node ===== */
 
@@ -1219,6 +1312,7 @@ function mostraToast(msg, tipo){
 }
 
 let _modalRenderCorrente = null;
+let _editorProprietaAperto = false;
 function apriModal(titolo, renderFn, opz){
   opz = opz || {};
   const overlay = document.getElementById('modal-overlay');
@@ -1226,6 +1320,7 @@ function apriModal(titolo, renderFn, opz){
   document.getElementById('modal-title').textContent = titolo;
   box.classList.toggle('largo', !!opz.largo);
   _modalRenderCorrente = renderFn;
+  _editorProprietaAperto = false; // reimpostato subito dopo da apriEditorProprieta()
   const body = document.getElementById('modal-body'), foot = document.getElementById('modal-foot');
   body.innerHTML=''; foot.innerHTML='';
   renderFn(body, foot);
@@ -1240,6 +1335,7 @@ function riDisegnaModal(){
 function chiudiModal(){
   document.getElementById('modal-overlay').classList.add('hidden');
   _modalRenderCorrente = null;
+  _editorProprietaAperto = false;
 }
 function apriConferma(messaggio, onConferma, labelOk){
   apriModal('Conferma', (body,foot)=>{
@@ -1271,17 +1367,27 @@ function segnaModificato(){
   if(typeof riDisegnaTutto === 'function') riDisegnaTutto();
 }
 
+function aggiornaIndicatoreAutosave(testo, salvato){
+  const el = document.getElementById('autosave-ind');
+  if(!el) return;
+  el.textContent = testo;
+  el.classList.toggle('salvato', !!salvato);
+}
 function salvaAutosaveNow(){
   try{
     localStorage.setItem(CHIAVE_AUTOSAVE, JSON.stringify(progetto));
+    const ora = new Date().toLocaleTimeString('it-IT');
+    aggiornaIndicatoreAutosave('Salvato automaticamente alle ' + ora, true);
   }catch(e){
     // quota superata o storage non disponibile: riprova senza la foto (spesso la causa dell'eccesso di spazio)
     try{
       const copia = clonaProfondo(progetto);
       copia.fotoRiferimento.dataUrl = null;
       localStorage.setItem(CHIAVE_AUTOSAVE, JSON.stringify(copia));
+      aggiornaIndicatoreAutosave('Salvato senza la foto (spazio insufficiente)', false);
       mostraToast('Autosalvataggio riuscito, ma la foto di riferimento è troppo grande per essere salvata automaticamente.', 'err');
     }catch(e2){
+      aggiornaIndicatoreAutosave('SALVATAGGIO AUTOMATICO NON RIUSCITO', false);
       mostraToast('Autosalvataggio non riuscito (memoria locale non disponibile).', 'err');
     }
   }
@@ -1719,6 +1825,19 @@ function disegnaContenutoSvg(){
       const cornersZ = Geo.verticiOBB(cx,cy,z.lunghezzaX/2,z.larghezzaY/2, a.rotazione||0);
       disegnaPoligonoMm(camera, cornersZ, {fill:'none', stroke:base.stroke, dash:'3,3', strokeWidth:1});
     });
+    const oAttr = origineAttrezzaturaMcs(a);
+    if(oAttr){
+      const lo = mmALocale(oAttr.x, oAttr.y); const scO = effettivaScala(); const dO = 9/scO;
+      const gO = elSvg('g');
+      gO.appendChild(elSvg('line',{x1:lo.x-dO,y1:lo.y,x2:lo.x+dO,y2:lo.y, stroke:base.stroke,'stroke-width':1.8/scO}));
+      gO.appendChild(elSvg('line',{x1:lo.x,y1:lo.y-dO,x2:lo.x,y2:lo.y+dO, stroke:base.stroke,'stroke-width':1.8/scO}));
+      gO.appendChild(elSvg('circle',{cx:lo.x,cy:lo.y,r:2.2/scO, fill:'none', stroke:base.stroke,'stroke-width':1.4/scO}));
+      if(a.origineRif && a.origineRif.codiceOrigine){
+        const tO = elSvg('text',{x:lo.x+dO+2/scO, y:lo.y+3/scO, fill:base.stroke,'font-size':(9.5/scO)+'px','font-weight':'700'});
+        tO.textContent = a.origineRif.codiceOrigine; gO.appendChild(tO);
+      }
+      camera.appendChild(gO);
+    }
     (a.puntiFissaggio||[]).forEach(pf=>{
       if(!tuttiNum(a.x,a.y,pf.dx,pf.dy)) return;
       const rot=(a.rotazione||0)*Math.PI/180, cos=Math.cos(rot), sin=Math.sin(rot);
@@ -1788,7 +1907,7 @@ function renderVistaFoto(){
 }
 
 /* ---- interazione puntatore: selezione, trascinamento, pan, zoom ---- */
-let trascinamento = null, panInCorso = null, pinch = null;
+let trascinamento = null, panInCorso = null, pinch = null, tapSenzaMovimento = false;
 const puntatoriAttivi = new Map();
 
 function trovaOggetto(tipo,id){
@@ -1829,19 +1948,20 @@ function onSvgPointerDown(e){
   }
   const target = e.target.closest('[data-tipo]');
   const inPianta = progetto.ui.vistaAttiva==='pianta';
+  tapSenzaMovimento = !!target;
   if(inPianta && target && target.dataset.tipo==='attrezzatura'){
     const obj = trovaOggetto('attrezzatura', target.dataset.id);
-    selezionaOggetto('attrezzatura', target.dataset.id);
+    impostaSelezione('attrezzatura', target.dataset.id);
     trascinamento = { tipo:'attrezzatura', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY), xIniziale:obj.x, yIniziale:obj.y };
   } else if(inPianta && target && target.dataset.tipo==='pezzo'){
     const obj = trovaOggetto('pezzo', target.dataset.id);
-    selezionaOggetto('pezzo', target.dataset.id);
+    impostaSelezione('pezzo', target.dataset.id);
     trascinamento = { tipo:'pezzo', id:target.dataset.id, mmStart:schermoAMm(e.clientX,e.clientY),
       xMinI:obj.xMin, xMaxI:obj.xMax, yMinI:obj.yMin, yMaxI:obj.yMax };
   } else if(target && (target.dataset.tipo==='attrezzatura' || target.dataset.tipo==='pezzo' || target.dataset.tipo==='volume')){
-    selezionaOggetto(target.dataset.tipo, target.dataset.id);
+    impostaSelezione(target.dataset.tipo, target.dataset.id);
   } else if(target && target.dataset.tipo==='origine'){
-    selezionaOggetto('origine', target.dataset.id);
+    impostaSelezione('origine', target.dataset.id);
   } else {
     deselezionaOggetto();
     panInCorso = { startX:e.clientX, startY:e.clientY, panX0:progetto.ui.panX, panY0:progetto.ui.panY };
@@ -1854,12 +1974,14 @@ function onSvgPointerMove(e){
     const pts=[...puntatoriAttivi.values()];
     const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
     progetto.ui.zoom = clampZoom(pinch.zoomIniziale*(dist/pinch.distIniziale));
+    tapSenzaMovimento = false;
     ridisegnaVistaCorrente();
     return;
   }
   if(trascinamento){
     const mm = schermoAMm(e.clientX,e.clientY);
     const dx = mm.x - trascinamento.mmStart.x, dy = mm.y - trascinamento.mmStart.y;
+    if(Math.abs(dx)>1e-9 || Math.abs(dy)>1e-9) tapSenzaMovimento = false;
     const passo = (progetto.ui.snapAttivo && isNum(progetto.macchina.passoGriglia) && progetto.macchina.passoGriglia>0) ? progetto.macchina.passoGriglia : null;
     if(trascinamento.tipo==='attrezzatura'){
       const obj = trovaOggetto('attrezzatura', trascinamento.id);
@@ -1880,14 +2002,21 @@ function onSvgPointerMove(e){
   if(panInCorso){
     progetto.ui.panX = panInCorso.panX0 + (e.clientX-panInCorso.startX);
     progetto.ui.panY = panInCorso.panY0 + (e.clientY-panInCorso.startY);
+    tapSenzaMovimento = false;
     ridisegnaVistaCorrente();
   }
 }
 function onSvgPointerUp(e){
   puntatoriAttivi.delete(e.pointerId);
   if(puntatoriAttivi.size<2) pinch=null;
-  if(trascinamento){ trascinamento=null; segnaModificato(); }
+  if(trascinamento){ trascinamento=null; if(!tapSenzaMovimento) segnaModificato(); }
   panInCorso=null;
+  if(tapSenzaMovimento && progetto.ui.selezione){
+    tapSenzaMovimento=false;
+    apriEditorProprieta();
+    return;
+  }
+  tapSenzaMovimento=false;
 }
 function onSvgWheel(e){
   e.preventDefault();
@@ -2054,7 +2183,10 @@ function renderMenubar(){
       {sep:true},
       {label:'Chiudi progetto', fn:chiudiProgettoMenu}
     ]},
-    {nome:'Macchina', azioni:[{label:'Configura macchina, tavola e corse', fn:()=>selezionaOggetto('macchina','unica')}]},
+    {nome:'Macchina', azioni:[
+      {label:'Configura macchina, tavola e corse', fn:()=>selezionaOggetto('macchina','unica')},
+      {label:'Ingombri mandrino', fn:()=>selezionaOggetto('mandrino','unico')}
+    ]},
     {nome:'Attrezzature', azioni:[{label:'Gestisci attrezzature', fn:apriElencoAttrezzature}]},
     {nome:'Origini', azioni:[
       ...CODICI_ORIGINE.map(c=>({label:'Gestisci '+c, fn:()=>selezionaOggetto('origine',c)})),
@@ -2087,22 +2219,51 @@ function renderMenubar(){
 /* =====================================================================
    10. ALBERO OGGETTI (pannello sinistro) E SELEZIONE
    ===================================================================== */
-function selezionaOggetto(tipo,id){
+// Seleziona senza aprire nulla: usata dal disegno, dove il tocco può anche essere l'inizio
+// di un trascinamento. L'editor si apre solo su tocco senza spostamento (vedi onSvgPointerUp).
+function impostaSelezione(tipo,id){
   if(tipo==='utensile' && !progetto.utensile) progetto.utensile = creaUtensile();
   progetto.ui.selezione={tipo,id};
-  renderAlbero(); renderPannelloProprieta();
+  renderAlbero();
   ridisegnaVistaCorrente();
+}
+function selezionaOggetto(tipo,id){
+  impostaSelezione(tipo,id);
   if(window.innerWidth<=860){
-    document.getElementById('props-panel').classList.add('aperto');
     document.getElementById('tree-panel').classList.remove('aperto');
-    document.getElementById('drawer-scrim').classList.add('attivo');
+    document.getElementById('drawer-scrim').classList.remove('attivo');
   }
+  apriEditorProprieta();
 }
 function deselezionaOggetto(){
-  progetto.ui.selezione=null; renderAlbero(); renderPannelloProprieta();
+  progetto.ui.selezione=null; renderAlbero();
   ridisegnaVistaCorrente();
 }
-function aggiornaPannelloProprietaSeSelezionato(){ if(progetto.ui.selezione) renderPannelloProprieta(); }
+// Compatibilità: le funzioni interne chiamano renderPannelloProprieta() per rinfrescare
+// l'editor dopo una modifica. Ora significa "ridisegna la finestra dell'editor, se è aperta".
+function renderPannelloProprieta(){ if(_editorProprietaAperto) riDisegnaModal(); }
+function aggiornaPannelloProprietaSeSelezionato(){ renderPannelloProprieta(); }
+
+function titoloEditor(sel){
+  if(sel.tipo==='macchina') return 'Macchina, tavola e corse';
+  if(sel.tipo==='mandrino') return 'Ingombri mandrino';
+  if(sel.tipo==='utensile') return 'Utensile e portautensile';
+  if(sel.tipo==='origine') return 'Origine ' + sel.id;
+  if(sel.tipo==='attrezzatura'){ const a=progetto.attrezzature.find(x=>x.id===sel.id); return 'Attrezzatura: ' + ((a&&a.nome)||'senza nome'); }
+  if(sel.tipo==='pezzo'){ const p=progetto.pezzi.find(x=>x.id===sel.id); return 'Pezzo: ' + ((p&&p.nome)||'senza nome'); }
+  if(sel.tipo==='volume'){ const v=progetto.volumiLavorazione.find(x=>x.id===sel.id); return 'Volume di lavorazione: ' + ((v&&v.nome)||'senza nome'); }
+  return 'Proprietà';
+}
+function apriEditorProprieta(){
+  const sel = progetto.ui.selezione;
+  if(!sel) return;
+  apriModal(titoloEditor(sel), (body,foot)=>{
+    renderEditorProprieta(body);
+    const b=document.createElement('button'); b.className='btn primario'; b.textContent='Chiudi'; b.onclick=chiudiModal;
+    foot.appendChild(b);
+  }, {largo:true});
+  _editorProprietaAperto = true;
+}
 
 function nodoAlbero(container, selezionato, colore, testo, onClick){
   const n=document.createElement('div'); n.className='albero-nodo'+(selezionato?' selezionato':'');
@@ -2146,20 +2307,24 @@ function renderAlbero(){
   });
   bAgg=document.createElement('button'); bAgg.className='albero-aggiungi'; bAgg.textContent='Gestisci volumi di lavorazione'; bAgg.onclick=apriElencoVolumi; panel.appendChild(bAgg);
 
-  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Utensile'; panel.appendChild(t);
-  nodoAlbero(panel, sel&&sel.tipo==='utensile', 'var(--missing)', (progetto.utensile&&progetto.utensile.nome)?progetto.utensile.nome:'(dati non inseriti)', ()=>selezionaOggetto('utensile','unico'));
+  t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Utensile e mandrino'; panel.appendChild(t);
+  nodoAlbero(panel, sel&&sel.tipo==='utensile', 'var(--missing)', (progetto.utensile&&progetto.utensile.nome)?progetto.utensile.nome:'(utensile non inserito)', ()=>selezionaOggetto('utensile','unico'));
+  const mand = progetto.mandrino;
+  const mandOk = mand && isNum(mand.diametro) && isNum(mand.lunghezza);
+  nodoAlbero(panel, sel&&sel.tipo==='mandrino', 'var(--steel)', mandOk ? ('Mandrino Ø'+formattaNumero(mand.diametro,1)) : 'Mandrino (non configurato)', ()=>selezionaOggetto('mandrino','unico'));
 }
 
 /* =====================================================================
    11. PANNELLO PROPRIETÀ (pannello destro) — editor per selezione corrente
    ===================================================================== */
-function renderPannelloProprieta(){
-  const panel=document.getElementById('props-panel'); panel.innerHTML='';
-  const t=document.createElement('div'); t.className='pannello-titolo'; t.textContent='Proprietà'; panel.appendChild(t);
+// L'editor delle proprietà vive in una finestra sovrapposta (con pulsante di chiusura),
+// non più in un pannello agganciato al bordo dello schermo.
+function renderEditorProprieta(panel){
   const sel=progetto.ui.selezione;
   if(!sel){ const v=document.createElement('div'); v.className='albero-vuoto'; v.textContent='Seleziona un elemento dall\'albero o dalla vista per modificarne le proprietà.'; panel.appendChild(v); return; }
   if(sel.tipo==='macchina') return renderProprietaMacchina(panel);
   if(sel.tipo==='utensile') return renderProprietaUtensile(panel);
+  if(sel.tipo==='mandrino') return renderProprietaMandrino(panel);
   if(sel.tipo==='attrezzatura'){ const a=progetto.attrezzature.find(x=>x.id===sel.id); if(!a){ deselezionaOggetto(); return; } return renderProprietaAttrezzatura(panel,a); }
   if(sel.tipo==='pezzo'){ const p=progetto.pezzi.find(x=>x.id===sel.id); if(!p){ deselezionaOggetto(); return; } return renderProprietaPezzo(panel,p); }
   if(sel.tipo==='origine') return renderProprietaOrigine(panel, sel.id);
@@ -2207,6 +2372,19 @@ function renderProprietaMacchina(panel){
   const bAggZona=document.createElement('button'); bAggZona.className='btn'; bAggZona.textContent='+ Aggiungi zona vietata';
   bAggZona.onclick=()=>{ progetto.macchina.zoneVietate.push(creaZonaVietata()); segnaModificato(); renderPannelloProprieta(); };
   fZone.appendChild(bAggZona);
+}
+
+function renderProprietaMandrino(panel){
+  const nota=document.createElement('div'); nota.className='nota-campo'; nota.style.marginBottom='10px';
+  nota.textContent='Ingombro semplificato del mandrino: cilindro impilato sopra il portautensile. È usato nel controllo dinamico solo se diametro e lunghezza sono entrambi configurati; se lasciati vuoti, il segmento mandrino non viene considerato (nessun ingombro inventato) e il resto del controllo prosegue.';
+  panel.appendChild(nota);
+  if(!progetto.mandrino) progetto.mandrino = creaMandrino();
+  const m=progetto.mandrino;
+  let r=document.createElement('div'); r.className='riga2'; panel.appendChild(r);
+  campoNumero(r,m,'diametro','Diametro mandrino'); campoNumero(r,m,'lunghezza','Lunghezza mandrino');
+  campoNumero(panel,m,'margineRadiale','Margine radiale mandrino',{nota:'Se vuoto viene usato il margine radiale dell\'utensile.'});
+  const f=document.createElement('fieldset'); f.className='gruppo'; f.innerHTML='<legend>Limite di corsa del naso mandrino</legend>'; panel.appendChild(f);
+  campoNumero(f,progetto.macchina,'quotaMinimaNasoMandrino','Quota minima naso mandrino (MCS)',{nota:'Stesso campo presente in MACCHINA. Se configurato, il rapporto segnala quando il naso mandrino scenderebbe sotto questa quota nel punto più profondo del volume di lavorazione.'});
 }
 
 function renderProprietaUtensile(panel){
@@ -2277,6 +2455,43 @@ function renderProprietaAttrezzatura(panel, a){
   const bAggPF=document.createElement('button'); bAggPF.className='btn piccolo'; bAggPF.textContent='+ Punto fissaggio';
   bAggPF.onclick=()=>{ a.puntiFissaggio.push({id:uid('pf'),dx:null,dy:null}); segnaModificato(); renderPannelloProprieta(); };
   fPF.appendChild(bAggPF);
+
+  const fOr=document.createElement('fieldset'); fOr.className='gruppo';
+  fOr.innerHTML='<legend>Origine dell\'attrezzatura (zero piano/morsa)</legend>';
+  panel.appendChild(fOr);
+  const notaOr=document.createElement('div'); notaOr.className='nota-campo'; notaOr.style.marginBottom='8px';
+  notaOr.textContent='Punto di riferimento dell\'attrezzatura, misurato dal suo spigolo minimo. Ruota insieme all\'attrezzatura. Se lo associ a un\'origine G54-G59, il rapporto segnala eventuali scostamenti fra i due valori senza deciderne d\'ufficio nessuno.';
+  fOr.appendChild(notaOr);
+  if(!a.origineRif) a.origineRif = { dx:null, dy:null, dz:null, codiceOrigine:null };
+  let rOr=document.createElement('div'); rOr.className='riga3'; fOr.appendChild(rOr);
+  campoNumero(rOr,a.origineRif,'dx','Offset X da spigolo min'); campoNumero(rOr,a.origineRif,'dy','Offset Y da spigolo min'); campoNumero(rOr,a.origineRif,'dz','Offset Z da base');
+  campoSelect(fOr, a.origineRif, 'codiceOrigine', 'Origine G associata',
+    [{value:'',label:'— nessuna —'}, ...CODICI_ORIGINE.map(c=>({value:c,label:c}))]);
+
+  const calc = origineAttrezzaturaMcs(a);
+  const box=document.createElement('div'); box.className='campo';
+  const lab=document.createElement('label'); lab.textContent='Coordinate macchina del punto'; box.appendChild(lab);
+  const val=document.createElement('div'); val.className='mono'; val.style.fontSize='14px'; val.style.color='var(--tx-hi)'; val.style.padding='6px 0';
+  val.textContent = calc ? ('X ' + fmtMm(calc.x) + '   Y ' + fmtMm(calc.y) + '   Z ' + (isNum(calc.z)?fmtMm(calc.z):'—'))
+                         : 'Non calcolabile: mancano posizione dell\'attrezzatura o offset.';
+  box.appendChild(val); fOr.appendChild(box);
+
+  if(calc && a.origineRif.codiceOrigine){
+    const bScrivi=document.createElement('button'); bScrivi.className='btn';
+    bScrivi.textContent='Scrivi queste coordinate in ' + a.origineRif.codiceOrigine;
+    bScrivi.onclick=()=>{
+      const codice = a.origineRif.codiceOrigine;
+      apriConferma('Sovrascrivere le coordinate di ' + codice + ' con il punto calcolato sull\'attrezzatura (X ' + fmtMm(calc.x) + ', Y ' + fmtMm(calc.y) + (isNum(calc.z)?(', Z ' + fmtMm(calc.z)):'') + ')?', ()=>{
+        const org = progetto.origini[codice];
+        org.x = calc.x; org.y = calc.y;
+        if(isNum(calc.z)) org.z = calc.z;
+        segnaModificato();
+        mostraToast('Coordinate scritte in ' + codice + '.', 'ok');
+        selezionaOggetto('attrezzatura', a.id);
+      }, 'Sovrascrivi');
+    };
+    fOr.appendChild(bScrivi);
+  }
 
   campoTesto(panel, a, 'note', 'Note', {area:true});
   const bElim=document.createElement('button'); bElim.className='btn pericolo'; bElim.style.marginTop='10px'; bElim.textContent='Elimina attrezzatura';
@@ -2491,13 +2706,12 @@ function aggiornaBadgeGlobale(){
 }
 function riDisegnaTutto(){
   renderAlbero();
-  if(progetto.ui.selezione) renderPannelloProprieta();
   if(['pianta','laterale','frontale'].includes(progetto.ui.vistaAttiva)) ridisegnaVistaCorrente();
   aggiornaBadgeGlobale();
 }
 function riDisegnaAppCompleta(){
   renderMenubar(); renderTabsVista(); renderToolbarCanvas();
-  renderAlbero(); renderPannelloProprieta();
+  renderAlbero();
   const usaSvg = ['pianta','laterale','frontale'].includes(progetto.ui.vistaAttiva);
   document.getElementById('svg-host').classList.toggle('hidden', !usaSvg);
   document.getElementById('foto-host').classList.toggle('hidden', progetto.ui.vistaAttiva!=='foto');
@@ -2877,12 +3091,49 @@ function testDiagnostici(){
     const ripristinato=normalizzaProgettoCaricato(JSON.parse(JSON.stringify(p)));
     return ripristinato.volumiLavorazione[0].xMin===-1.5 && ripristinato.volumiLavorazione[0].quotaSicurezza===25;
   });
-  t('8. Salvataggio e riapertura \u2192 dati invariati', ()=>{
+  t('14. Origine attrezzatura discordante da G54 \u2192 avviso', ()=>{
+    const p=creaProgettoVuoto();
+    p.macchina.tavola={lunghezza:600,larghezza:400,quotaSuperiore:0,posizione:{x:0,y:0,z:0}};
+    p.origini.G54.x=100; p.origini.G54.y=100; p.origini.G54.z=0;
+    const a=creaAttrezzatura('piano_magnetico');
+    Object.assign(a,{nome:'Piano',lunghezzaX:200,larghezzaY:200,altezzaZ:40,x:0,y:0,zBase:0});
+    a.origineRif={dx:0,dy:0,dz:0,codiceOrigine:'G54'};
+    p.attrezzature.push(a);
+    const an=Motore.eseguiControlli(p).anomalie.find(x=>x.tipo==='ORIGINE_ATTREZZATURA_DISCORDANTE');
+    return !!an && an.gravita===STATI.AVVISO;
+  });
+  t('15. Origine attrezzatura coincidente \u2192 nessun avviso', ()=>{
+    const p=creaProgettoVuoto();
+    p.macchina.tavola={lunghezza:600,larghezza:400,quotaSuperiore:0,posizione:{x:0,y:0,z:0}};
+    p.origini.G54.x=100; p.origini.G54.y=100; p.origini.G54.z=0;
+    const a=creaAttrezzatura('piano_magnetico');
+    Object.assign(a,{nome:'Piano',lunghezzaX:200,larghezzaY:200,altezzaZ:40,x:0,y:0,zBase:0});
+    a.origineRif={dx:100,dy:100,dz:0,codiceOrigine:'G54'};
+    p.attrezzature.push(a);
+    return !Motore.eseguiControlli(p).anomalie.some(x=>x.tipo==='ORIGINE_ATTREZZATURA_DISCORDANTE');
+  });
+  t('16. Mandrino non configurato \u2192 nessun ingombro inventato', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    p.utensile=Object.assign(creaUtensile(),{diametroFresa:10,lunghezzaTagliente:30,diametroCodolo:10,lunghezzaCodolo:40,diametroPortautensile:40,lunghezzaPortautensile:60});
+    const v=Object.assign(creaVolumeLavorazione(),{origine:'G54',xMin:-20,xMax:20,yMin:-20,yMax:20,zMin:-15,zMax:0,quotaSicurezza:50});
+    p.volumiLavorazione.push(v);
+    const sp=Motore._volumiUtensileSpazzati(v,p.utensile,p.origini.G54,p.mandrino);
+    return sp.mandrino===null && !Motore.eseguiControlli(p).anomalie.some(x=>x.tipo==='MANDRINO_CONTRO_OGGETTO');
+  });
+  t('17. Naso mandrino sotto la quota minima \u2192 avviso con scostamento', ()=>{
+    const p=creaProgettoVuoto(); p.origini.G54.x=0;p.origini.G54.y=0;p.origini.G54.z=0;
+    p.macchina.quotaMinimaNasoMandrino=200;
+    p.utensile=Object.assign(creaUtensile(),{diametroFresa:10,lunghezzaTagliente:30,diametroCodolo:10,lunghezzaCodolo:40,diametroPortautensile:40,lunghezzaPortautensile:60});
+    p.volumiLavorazione.push(Object.assign(creaVolumeLavorazione(),{origine:'G54',xMin:-20,xMax:20,yMin:-20,yMax:20,zMin:-15,zMax:0,quotaSicurezza:50}));
+    const an=Motore.eseguiControlli(p).anomalie.find(x=>x.tipo==='NASO_MANDRINO_SOTTO_QUOTA_MINIMA');
+    return !!an && Math.abs(an.distanzaOPenetrazione-85)<1e-9;
+  });
+  t('18. Salvataggio e riapertura \u2192 dati invariati', ()=>{
     const p=creaProgettoVuoto(); p.macchina.corse.xMin=-12.5; const a=creaAttrezzatura('morsa'); a.x=3.5; p.attrezzature.push(a);
     const ripristinato=normalizzaProgettoCaricato(JSON.parse(JSON.stringify(p)));
     return ripristinato.macchina.corse.xMin===-12.5 && ripristinato.attrezzature[0].x===3.5;
   });
-  t('9. Numeri con virgola decimale \u2192 interpretazione corretta', ()=>{
+  t('19. Numeri con virgola decimale \u2192 interpretazione corretta', ()=>{
     return parseNumeroIt('12,5')===12.5 && parseNumeroIt('-3,25')===-3.25 && parseNumeroIt('')===null && Number.isNaN(parseNumeroIt('abc'));
   });
   return risultati;
@@ -2912,7 +3163,7 @@ function apriAiuto(){
   apriModal('Informazioni e limiti del progetto', (body,foot)=>{
     body.innerHTML = `
     <p style="font-size:13px;color:var(--tx-mid)"><b style="color:var(--warn)">Strumento di pre-verifica geometrica.</b> Non \u00e8 un simulatore CNC certificato. Non sostituisce: simulazione CAM; simulazione del controllo CNC; Single Block; Dry Run; prova con avanzamento ridotto; procedure di sicurezza della macchina.</p>
-    <p style="font-size:13px;color:var(--tx-mid)">Versione app: <b class="mono">${APP_VERSION}</b> \u2014 nucleo statico + controllo dinamico su volume di lavorazione + viste ortogonali XZ/YZ.</p>
+    <p style="font-size:13px;color:var(--tx-mid)">Versione app: <b class="mono">${APP_VERSION}</b> \u2014 nucleo statico + controllo dinamico su volume di lavorazione + viste ortogonali XZ/YZ + mandrino e origini attrezzatura.</p>
     <fieldset class="gruppo"><legend>Cosa fa questa versione \u2014 statico</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
       <li>Configurazione macchina, tavola, corse, orientamento assi a schermo.</li>
       <li>Piano magnetico, morsa, altre attrezzature, con zone di ingombro aggiuntive e punti di fissaggio.</li>
@@ -2922,6 +3173,9 @@ function apriAiuto(){
       <li>Vista in pianta (XY) quotata: zoom, pan, trascinamento, selezione, griglia, snap.</li>
       <li>Viste laterale (XZ) e frontale (YZ): stessa geometria proiettata sull'asse verticale Z, inquadrate sulle corse macchina (non sulla tavola). La tavola vi appare come banda tra <span class="mono">posizione.z</span> e <span class="mono">quotaSuperiore</span>. Zoom, pan e selezione funzionano; il trascinamento resta per ora solo in pianta.</li>
       <li>Vista foto di riferimento, sempre etichettata "FOTO DI RIFERIMENTO \u2014 NON IN SCALA".</li>
+      <li><b>Origine dell'attrezzatura</b> (zero del piano magnetico o della morsa): punto di riferimento misurato dallo spigolo minimo dell'attrezzatura, che ruota insieme ad essa. Se associato a un'origine G54\u2013G59, il rapporto segnala gli scostamenti fra i due valori senza deciderne d'ufficio nessuno; dal pannello attrezzatura puoi anche riportare il punto calcolato dentro l'origine G.</li>
+      <li>Tutti i dati sono <b>salvati automaticamente</b> nella memoria locale del browser a ogni modifica e subito prima di lasciare la pagina; l'indicatore in basso mostra l'ora dell'ultimo salvataggio. Restano nel browser che stai usando: per portarli altrove usa FILE \u2192 Salva (JSON).</li>
+      <li>L'editor delle propriet\u00e0 si apre in una finestra sovrapposta con pulsante di chiusura. Nel disegno, un tocco apre l'editor dell'oggetto, il trascinamento lo sposta (in pianta).</li>
     </ul></fieldset>
     <fieldset class="gruppo"><legend>Cosa fa questa versione \u2014 dinamico</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
       <li>UTENSILE \u2192 Gestisci volumi di lavorazione: dichiari una regione X/Y/Z (rispetto a un'origine) entro cui pu\u00f2 trovarsi la <b>punta</b> dell'utensile durante l'operazione \u2014 non un percorso reale importato.</li>
@@ -2931,12 +3185,16 @@ function apriAiuto(){
       <li>Se utensile o volumi non sono ancora configurati, il badge di stato resta quello statico (non scende a "non eseguibile" solo perch\u00e9 non hai ancora iniziato); se li hai iniziati ma sono incompleti, sale a DATI INCOMPLETI.</li>
       <li>Il controllo Z rispetto alle corse macchina riguarda solo il range della <b>punta</b>: codolo e portautensile si estendono naturalmente oltre (sono sopra la punta), non ha senso fisico limitarli alla corsa Z.</li>
       <li>Nelle viste laterale/frontale, il volume di lavorazione \u00e8 disegnato come rettangolo dichiarato: non mostra l'ingombro utensile gi\u00e0 espanso per raggio/margine.</li>
+      <li><b>Ingombro mandrino</b> (MACCHINA \u2192 Ingombri mandrino): cilindro semplificato impilato sopra il portautensile, verificato come quarto segmento contro pezzi e attrezzature. \u00c8 considerato solo se diametro e lunghezza sono entrambi configurati; altrimenti il segmento non esiste e il resto del controllo prosegue comunque.</li>
+      <li>Se \u00e8 configurata la quota minima del naso mandrino, il rapporto segnala quando il naso scenderebbe sotto di essa con la punta nel punto pi\u00f9 profondo del volume, indicando lo scostamento.</li>
     </ul></fieldset>
     <fieldset class="gruppo"><legend>Cosa NON fa ancora questa versione</legend><ul style="font-size:12.5px;color:var(--tx-mid);padding-left:18px;line-height:1.7;">
       <li>Nessun percorso utensile reale n\u00e9 parser G-code (.nc/.tap/.txt): solo il volume di lavorazione dichiarato manualmente.</li>
       <li>Il volume di lavorazione non ruota insieme al pezzo attivo: se il pezzo ha una rotazione diversa da zero, il volume resta comunque allineato agli assi macchina (l'app te lo segnala con un avviso, ma non lo corregge automaticamente).</li>
       <li>Nelle viste laterale/frontale non si trascina nulla (solo selezione, zoom, pan): per spostare un oggetto torna alla pianta o modifica i campi numerici nel pannello proprietà. Le zone vietate senza quote Z non compaiono in queste viste (mancherebbe l'estensione verticale).</li>
       <li>Nessun ottimizzatore automatico del piazzamento ("Suggerisci piazzamento").</li>
+      <li>Il mandrino \u00e8 modellato come cilindro coassiale all'utensile: non rappresenta carter, sonde, bracci del cambio utensile o altri organi asimmetrici della testa.</li>
+      <li>Il confronto fra origine dell'attrezzatura e origine G segnala la discordanza ma non corregge nulla da solo: quale dei due valori sia autorevole lo decidi tu sulla macchina.</li>
       <li>La foto di riferimento viene inclusa nell'autosalvataggio locale solo se lo spazio disponibile lo consente; non \u00e8 ancora inclusa nel file JSON di "Salva"/"Salva con nome".</li>
       <li>La rotazione di attrezzature e pezzi si imposta da campo numerico: non \u00e8 ancora trascinabile a schermo (la sola posizione X/Y lo \u00e8, e solo in pianta). I volumi di lavorazione non sono trascinabili.</li>
       <li>"Salva" scarica una nuova copia del file: per limiti del browser non pu\u00f2 sovrascrivere in modo invisibile il file originale.</li>
@@ -2963,14 +3221,15 @@ function inizializzaApp(){
 
   document.getElementById('menu-toggle-mobile').onclick = ()=>{
     document.getElementById('tree-panel').classList.add('aperto');
-    document.getElementById('props-panel').classList.remove('aperto');
     document.getElementById('drawer-scrim').classList.add('attivo');
   };
   document.getElementById('drawer-scrim').onclick = ()=>{
     document.getElementById('tree-panel').classList.remove('aperto');
-    document.getElementById('props-panel').classList.remove('aperto');
     document.getElementById('drawer-scrim').classList.remove('attivo');
   };
+
+  window.addEventListener('pagehide', salvaAutosaveNow);
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') salvaAutosaveNow(); });
 
   document.getElementById('btn-wizard').onclick = ()=>apriWizard(0);
   document.getElementById('btn-verify').onclick = ()=>{ if(datiMinimiPerVerifica()) apriReportAnomalie(); };
